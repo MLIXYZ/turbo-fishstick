@@ -1,0 +1,33 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    background-color: #fafafa;
+}
+
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+header {
+    background: #1976d2;
+    color: white;
+    padding: 48px 24px;
+    text-align: center;
+    border-radius: 4px;
+    margin-bottom: 24px;
+}
+
+main {
+    background: white;
+    padding: 24px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+footer {
+    text-align: center;
+    padding: 24px;
+    color: #757575;
+}

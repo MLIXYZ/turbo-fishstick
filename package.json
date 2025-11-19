@@ -1,0 +1,24 @@
+{
+  "name": "video-game-key-platform",
+  "version": "1.0.0",
+  "description": "Group 5 Projectr",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "client": "cd client && npm run dev",
+    "server": "cd server && npm run dev",
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install && cd ..",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build"
+  },
+  "keywords": [
+    "express",
+    "gaming",
+    "ecommerce",
+    "key-distribution"
+  ],
+  "author": "Group 5",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
