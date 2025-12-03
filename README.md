@@ -1,6 +1,8 @@
 # Video Game Key Distribution Platform
 **Group 5 Project**
 
+design https://drive.google.com/drive/folders/1vAHhsOOfu9PDQofsiP6NyjCGvk6msfY9?usp=sharing
+
 ## Overview
 
 This platform provides a seamless marketplace for buying and selling digital video game keys. Users can browse available games, make secure purchases, and instantly receive their game activation keys.
