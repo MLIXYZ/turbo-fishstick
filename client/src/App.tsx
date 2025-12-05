@@ -28,7 +28,7 @@ interface Product {
 
 const API_URL = 'http://localhost:3000/api';
 
-function App(): JSX.Element {
+function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
