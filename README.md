@@ -67,3 +67,8 @@ npm run build:client  # Build React app
 npm run build:server  # Build Express app
 ```
 
+**Credit:**
+``
+Claude Code
++ add any license required software here *TODO*
+``
