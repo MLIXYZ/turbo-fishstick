@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Box, Container, Grid, CircularProgress, Typography } from '@mui/material';
+import {
+  Box,
+  Container,
+  CircularProgress,
+  Typography,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
 import axios from 'axios';
 import Header from './components/Header';
 import CategorySidebar from './components/CategorySidebar';
@@ -21,13 +28,19 @@ interface Product {
 
 const API_URL = 'http://localhost:3000/api';
 
-function App() {
+function App(): JSX.Element {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  // TODO: Implement dynamic cart state management
+  const [cartItemCount] = useState<number>(0);
 
   useEffect(() => {
     fetchCategories();
@@ -80,27 +93,83 @@ function App() {
     setSearchQuery(query);
   };
 
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Header onSearch={handleSearch} />
+  const handleMenuClick = () => {
+    setMobileDrawerOpen(true);
+  };
 
-      <Container maxWidth="xl" sx={{ mt: 3, mb: 4, flexGrow: 1 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={3}>
+  const handleDrawerClose = () => {
+    setMobileDrawerOpen(false);
+  };
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'grey.100' }}>
+      <Header
+        onSearch={handleSearch}
+        onMenuClick={handleMenuClick}
+        cartItemCount={cartItemCount}
+      />
+
+      <Box sx={{ display: 'flex', flexGrow: 1 }}>
+        {!isMobile && (
+          <Box
+            sx={{
+              width: 260,
+              flexShrink: 0,
+              position: 'fixed',
+              left: 0,
+              top: 64,
+              bottom: 0,
+              overflowY: 'auto',
+              borderRight: 1,
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+              zIndex: 100
+            }}
+          >
             <CategorySidebar
               categories={categories}
               selectedCategory={selectedCategory}
               onCategorySelect={handleCategorySelect}
             />
-          </Grid>
+          </Box>
+        )}
 
-          <Grid item xs={12} md={9}>
+        {isMobile && (
+          <CategorySidebar
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategorySelect={handleCategorySelect}
+            mobileOpen={mobileDrawerOpen}
+            onMobileClose={handleDrawerClose}
+          />
+        )}
+
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            marginLeft: { xs: 0, md: '260px' },
+            minHeight: 'calc(100vh - 64px)'
+          }}
+        >
+          <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
+            <Box sx={{ mb: { xs: 2, md: 3 } }}>
+              <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
+                {selectedCategory
+                  ? categories.find((c) => c.id === selectedCategory)?.name || 'Games'
+                  : 'All Games'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {products.length} {products.length === 1 ? 'game' : 'games'} available
+              </Typography>
+            </Box>
+
             {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                <CircularProgress />
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8, minHeight: 400 }}>
+                <CircularProgress size={60} />
               </Box>
             ) : error ? (
-              <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8, minHeight: 400 }}>
                 <Typography variant="h6" color="error">
                   {error}
                 </Typography>
@@ -108,15 +177,30 @@ function App() {
             ) : (
               <ProductGrid products={products} />
             )}
-          </Grid>
-        </Grid>
-      </Container>
+          </Container>
+        </Box>
+      </Box>
 
-      <Box sx={{ bgcolor: 'grey.200', py: 3, mt: 'auto' }}>
-        <Container>
-          <Typography variant="body2" align="center" color="text.secondary">
-            &copy; 2025 Game Key Store - Group 5
-          </Typography>
+      <Box
+        component="footer"
+        sx={{
+          bgcolor: 'grey.900',
+          color: 'white',
+          py: { xs: 3, md: 4 },
+          borderTop: 1,
+          borderColor: 'divider',
+          marginLeft: { xs: 0, md: '260px' }
+        }}
+      >
+        <Container maxWidth="xl">
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h6" fontWeight={600} gutterBottom>
+              🎮 Game Key Store
+            </Typography>
+            <Typography variant="body2" color="grey.400">
+              &copy; 2025 Game Key Store - Group 5. All rights reserved.
+            </Typography>
+          </Box>
         </Container>
       </Box>
     </Box>

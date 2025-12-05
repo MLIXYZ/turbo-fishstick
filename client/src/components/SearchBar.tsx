@@ -6,7 +6,7 @@ interface SearchBarProps {
   onSearch: (query: string) => void;
 }
 
-function SearchBar({ onSearch }: SearchBarProps) {
+function SearchBar({ onSearch }: SearchBarProps): JSX.Element {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,10 +22,8 @@ function SearchBar({ onSearch }: SearchBarProps) {
       placeholder="Search games..."
       value={searchQuery}
       onChange={handleSearch}
-      sx={{
-        bgcolor: 'white',
-        borderRadius: 1,
-      }}
+      variant="outlined"
+      sx={{ bgcolor: 'background.paper', borderRadius: 1 }}
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">

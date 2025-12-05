@@ -2,7 +2,10 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 require('dotenv').config();
-const db = require('./config/db');
+
+// Import Sequelize models
+const { sequelize, Category, Product, syncDatabase } = require('./models');
+const { testConnection } = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,11 +14,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+syncDatabase();
+
 // API Routes
 app.get('/api/categories', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM categories ORDER BY name ASC');
-    res.json(rows);
+    const categories = await Category.findAll({
+      order: [['name', 'ASC']],
+      attributes: ['id', 'name', 'description']
+    });
+    res.json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);
     res.status(500).json({ error: 'Failed to fetch categories' });
@@ -25,23 +33,31 @@ app.get('/api/categories', async (req, res) => {
 app.get('/api/products', async (req, res) => {
   try {
     const { category, search } = req.query;
-    let query = 'SELECT * FROM products WHERE 1=1';
-    const params = [];
+    const where = { is_active: true };
 
     if (category) {
-      query += ' AND category_id = ?';
-      params.push(category);
+      where.category_id = category;
     }
 
     if (search) {
-      query += ' AND (title LIKE ? OR description LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`);
+      const { Op } = require('sequelize');
+      where[Op.or] = [
+        { title: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } }
+      ];
     }
 
-    query += ' ORDER BY created_at DESC';
+    const products = await Product.findAll({
+      where,
+      include: [{
+        model: Category,
+        as: 'category',
+        attributes: ['id', 'name']
+      }],
+      order: [['created_at', 'DESC']]
+    });
 
-    const [rows] = await db.query(query, params);
-    res.json(rows);
+    res.json(products);
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ error: 'Failed to fetch products' });
@@ -50,11 +66,19 @@ app.get('/api/products', async (req, res) => {
 
 app.get('/api/products/:id', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM products WHERE id = ?', [req.params.id]);
-    if (rows.length === 0) {
+    const product = await Product.findByPk(req.params.id, {
+      include: [{
+        model: Category,
+        as: 'category',
+        attributes: ['id', 'name']
+      }]
+    });
+
+    if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
-    res.json(rows[0]);
+
+    res.json(product);
   } catch (error) {
     console.error('Error fetching product:', error);
     res.status(500).json({ error: 'Failed to fetch product' });
