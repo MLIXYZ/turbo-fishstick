@@ -16,6 +16,7 @@ This platform provides a seamless marketplace for buying and selling digital vid
 - **Axios**
 - **Luxon**
 - **Kysely**
+- **FontAwsome**
 
 ### Backend
 - **Express.js**
