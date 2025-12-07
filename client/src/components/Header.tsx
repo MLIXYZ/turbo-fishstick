@@ -5,13 +5,16 @@ import {
   IconButton,
   Box,
   Badge,
+  Button,
   useMediaQuery,
   useTheme
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShoppingCart, faGamepad } from '@fortawesome/free-solid-svg-icons';
+import { faShoppingCart, faGamepad, faUser } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 import SearchBar from './SearchBar';
+import ROUTES from '../config/routes';
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -22,10 +25,15 @@ interface HeaderProps {
 function Header({ onSearch, onMenuClick, cartItemCount = 0 }: HeaderProps): JSX.Element {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
 
   const handleCartClick = () => {
     // TODO: Implement cart modal/page navigation
     console.log('Cart clicked');
+  };
+
+  const handleLoginClick = () => {
+    navigate(ROUTES.LOGIN);
   };
 
   return (
@@ -88,7 +96,7 @@ function Header({ onSearch, onMenuClick, cartItemCount = 0 }: HeaderProps): JSX.
           <Box
             sx={{
               display: 'flex',
-              gap: 1,
+              gap: { xs: 0.5, md: 2 },
               alignItems: 'center',
               flexShrink: 0,
               minWidth: { xs: 'auto', md: 200 },
@@ -103,6 +111,35 @@ function Header({ onSearch, onMenuClick, cartItemCount = 0 }: HeaderProps): JSX.
               ) : (
                 <FontAwesomeIcon icon={faShoppingCart} size="lg" />
               )}
+            </IconButton>
+
+            <Button
+              variant="contained"
+              onClick={handleLoginClick}
+              startIcon={<FontAwesomeIcon icon={faUser} />}
+              sx={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                color: 'white',
+                fontWeight: 600,
+                px: { xs: 1.5, md: 2.5 },
+                '&:hover': {
+                  background: 'rgba(255, 255, 255, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                },
+                display: { xs: 'none', sm: 'flex' }
+              }}
+            >
+              Login
+            </Button>
+
+            <IconButton
+              color="inherit"
+              onClick={handleLoginClick}
+              sx={{ display: { xs: 'flex', sm: 'none' } }}
+            >
+              <FontAwesomeIcon icon={faUser} />
             </IconButton>
           </Box>
         </Box>
