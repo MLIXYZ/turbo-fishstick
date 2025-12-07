@@ -1,7 +1,8 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/database';
+import { ProductInstance, ProductAttributes, ProductCreationAttributes } from '../types/models';
 
-const Product = sequelize.define('Product', {
+const Product = sequelize.define<ProductInstance>('Product', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -18,9 +19,9 @@ const Product = sequelize.define('Product', {
   price: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
-    get() {
+    get(): number {
       const value = this.getDataValue('price');
-      return value ? parseFloat(value) : 0;
+      return value ? parseFloat(value as any) : 0;
     }
   },
   category_id: {
@@ -64,4 +65,5 @@ const Product = sequelize.define('Product', {
   updatedAt: 'updated_at'
 });
 
-module.exports = Product;
+export default Product;
+export { ProductInstance, ProductAttributes, ProductCreationAttributes };
