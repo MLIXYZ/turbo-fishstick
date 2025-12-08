@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { Category, Product, syncDatabase } from './models';
+import authRoutes from './routes/auth';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,9 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 syncDatabase();
+
+// Auth routes
+app.use('/api/auth', authRoutes);
 
 app.get('/api/categories', async (_req: Request, res: Response): Promise<void> => {
   try {
