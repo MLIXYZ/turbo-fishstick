@@ -54,7 +54,7 @@ const User = sequelize.define<UserInstance>('User', {
     defaultValue: true
   },
   role: {
-    type: DataTypes.ENUM('customer', 'admin', 'seller'),
+    type: DataTypes.ENUM('customer', 'admin'),
     defaultValue: 'customer'
   },
   balance: {
