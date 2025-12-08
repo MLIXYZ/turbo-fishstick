@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Box, Container, Typography } from '@mui/material'
-import Header from './components/Header'
-import Home from './pages/Home'
+import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Box, Container, Typography } from '@mui/material';
+import Header from './components/Header';
+import Home from './pages/Home';
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
-import ROUTES from './config/routes'
+import ROUTES from './config/routes';
 
 function App() {
     const [searchQuery, setSearchQuery] = useState('')
@@ -91,4 +91,4 @@ function App() {
     )
 }
 
-export default App
+export default App;

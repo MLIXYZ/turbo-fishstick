@@ -19,6 +19,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import SearchBar from './SearchBar'
 import ROUTES from '../config/routes'
+import type {JSX} from "react"
 
 interface HeaderProps {
     onSearch: (query: string) => void
@@ -35,10 +36,10 @@ function Header({
     const isMobile = useMediaQuery(theme.breakpoints.down('md'))
     const navigate = useNavigate()
 
-    const handleCartClick = () => {
-        // TODO: Implement cart modal/page navigation
-        console.log('Cart clicked')
-    }
+  const handleCartClick = () => {
+      navigate(ROUTES.CART);
+      console.log('Cart clicked');
+  };
 
     const handleLoginClick = () => {
         navigate(ROUTES.LOGIN)
@@ -169,4 +170,4 @@ function Header({
     )
 }
 
-export default Header
+export default Header;
