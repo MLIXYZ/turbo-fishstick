@@ -13,17 +13,17 @@ function App() {
     // TODO: Implement dynamic cart state management
     const [cartItemCount] = useState<number>(0)
 
-    const handleSearch = (query: string) => {
-        setSearchQuery(query)
-    }
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
 
-    const handleMenuClick = () => {
-        setMobileDrawerOpen(true)
-    }
+  const handleMenuClick = () => {
+    setMobileDrawerOpen(true);
+  };
 
-    const handleDrawerClose = () => {
-        setMobileDrawerOpen(false)
-    }
+  const handleDrawerClose = () => {
+    setMobileDrawerOpen(false);
+  };
 
     return (
         <Router>

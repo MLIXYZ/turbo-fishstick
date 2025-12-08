@@ -56,16 +56,13 @@ function Cart({
               }: CartProps) {
     const theme = useTheme();
     useMediaQuery(theme.breakpoints.down('md'));
+
     const navigate = useNavigate();
     const isLoggedIn = false;
 
-    const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [stockMap, setStockMap] = useState<Record<number, number | null>>({});
     const [stockLoading, setStockLoading] = useState(true);
-
-    useEffect(() => {
-        setCartItems(getCart());
-    }, []);
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
     useEffect(() => {
         async function fetchStock() {
@@ -214,7 +211,6 @@ function Cart({
                                 </Box>
                             </Box>
                         ))}
-
 
                         <Typography variant="h6" sx={{ mt: 3 }}>
                             Subtotal: ${subtotal.toFixed(2)}
