@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon --exec ts-node server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "eslint .",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write ."
   },
   "author": "Group 5",
   "license": "ISC",
