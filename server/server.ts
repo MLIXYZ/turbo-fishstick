@@ -5,6 +5,9 @@ import dotenv from 'dotenv'
 import { Op } from 'sequelize'
 
 dotenv.config()
+import Order from './models/Order';
+import Transaction from './models/Transaction';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Category, Product, syncDatabase } from './models'
 import authRoutes from './routes/auth'
@@ -36,6 +39,74 @@ app.get(
         }
     }
 )
+
+app.post('/api/checkout', async (req, res) => {
+    try {
+        const {
+            cartItems,
+            subtotal,
+            tax,
+            total,
+            paymentMethod,
+            billing_name,
+            billing_email,
+        } = req.body;
+
+        if (!cartItems || cartItems.length === 0) {
+            return res.status(400).json({ error: 'Cart is empty' });
+        }
+
+        if (!billing_name || !billing_email) {
+            return res.status(400).json({ error: 'Missing billing info' });
+        }
+
+        // Placeholder userID
+        const userId = null;
+
+        const orderNumber = `ORD-${Date.now()}`;
+
+        const order = await Order.create({
+            user_id: userId || 1,   // TEMP: point to your demo user if needed
+            order_number: orderNumber,
+            status: 'pending',
+            subtotal: subtotal,
+            tax: tax,
+            discount: 0,
+            total: total,
+            payment_method: paymentMethod,
+            payment_status: 'pending',
+            billing_email,
+            billing_name,
+            ip_address: req.ip,
+            user_agent: req.headers['user-agent'],
+            notes: null,
+        });
+
+        await Transaction.create({
+            user_id: userId || 1,
+            order_id: order.id,
+            transaction_id: uuidv4(),
+            type: 'payment',
+            amount: total,
+            currency: 'USD',
+            status: 'success', // pretend payment succeeded
+            payment_method: paymentMethod,
+            payment_gateway: 'placeholder_gateway',
+            description: 'Test payment transaction',
+            metadata: { cartItems },
+        });
+
+        return res.status(201).json({
+            message: 'Checkout successful (placeholder)',
+            orderId: order.id,
+            orderNumber,
+        });
+
+    } catch (err) {
+        console.error('Checkout API Error:', err);
+        return res.status(500).json({ error: 'Checkout failed on server' });
+    }
+});
 
 app.get('/api/products', async (req: Request, res: Response): Promise<void> => {
     try {
