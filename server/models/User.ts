@@ -68,7 +68,7 @@ const User = sequelize.define<UserInstance>(
             defaultValue: 0.0,
             get(): number {
                 const value = this.getDataValue('balance')
-                return value ? parseFloat(value as any) : 0
+                return value ? parseFloat(value as string) : 0
             },
         },
         last_login: {

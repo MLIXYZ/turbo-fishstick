@@ -9,10 +9,10 @@ export interface CategoryAttributes {
     updated_at: Date
 }
 
-export interface CategoryCreationAttributes extends Optional<
+export type CategoryCreationAttributes = Optional<
     CategoryAttributes,
     'id' | 'description' | 'created_at' | 'updated_at'
-> {}
+>
 
 export interface CategoryInstance
     extends
@@ -34,7 +34,7 @@ export interface ProductAttributes {
     updated_at: Date
 }
 
-export interface ProductCreationAttributes extends Optional<
+export type ProductCreationAttributes = Optional<
     ProductAttributes,
     | 'id'
     | 'description'
@@ -45,7 +45,7 @@ export interface ProductCreationAttributes extends Optional<
     | 'is_active'
     | 'created_at'
     | 'updated_at'
-> {}
+>
 
 export interface ProductInstance
     extends
@@ -73,7 +73,7 @@ export interface UserAttributes {
     updated_at: Date
 }
 
-export interface UserCreationAttributes extends Optional<
+export type UserCreationAttributes = Optional<
     UserAttributes,
     | 'id'
     | 'phone'
@@ -86,7 +86,7 @@ export interface UserCreationAttributes extends Optional<
     | 'last_login'
     | 'created_at'
     | 'updated_at'
-> {}
+>
 
 export interface UserInstance
     extends Model<UserAttributes, UserCreationAttributes>, UserAttributes {}
@@ -113,7 +113,7 @@ export interface OrderAttributes {
     updated_at: Date
 }
 
-export interface OrderCreationAttributes extends Optional<
+export type OrderCreationAttributes = Optional<
     OrderAttributes,
     | 'id'
     | 'status'
@@ -128,7 +128,7 @@ export interface OrderCreationAttributes extends Optional<
     | 'completed_at'
     | 'created_at'
     | 'updated_at'
-> {}
+>
 
 export interface OrderInstance
     extends Model<OrderAttributes, OrderCreationAttributes>, OrderAttributes {
@@ -148,12 +148,12 @@ export interface TransactionAttributes {
     payment_gateway: string | null
     gateway_response: string | null
     description: string | null
-    metadata: Record<string, any> | null
+    metadata: Record<string, unknown> | null
     created_at: Date
     updated_at: Date
 }
 
-export interface TransactionCreationAttributes extends Optional<
+export type TransactionCreationAttributes = Optional<
     TransactionAttributes,
     | 'id'
     | 'order_id'
@@ -166,7 +166,7 @@ export interface TransactionCreationAttributes extends Optional<
     | 'metadata'
     | 'created_at'
     | 'updated_at'
-> {}
+>
 
 export interface TransactionInstance
     extends
@@ -187,10 +187,10 @@ export interface DiscountCodeLogAttributes {
     percent_off: number
 }
 
-export interface DiscountCodeLogCreationAttributes extends Optional<
+export type DiscountCodeLogCreationAttributes = Optional<
     DiscountCodeLogAttributes,
     'id' | 'created_at' | 'by' | 'status' | 'used_on' | 'order_number'
-> {}
+>
 
 export interface DiscountCodeLogInstance
     extends

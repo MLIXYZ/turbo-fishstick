@@ -49,7 +49,7 @@ const DiscountCodeLog = sequelize.define<DiscountCodeLogInstance>(
             allowNull: false,
             get(): number {
                 const value = this.getDataValue('percent_off')
-                return value ? parseFloat(value as any) : 0
+                return value ? parseFloat(value as string) : 0
             },
         },
     },
