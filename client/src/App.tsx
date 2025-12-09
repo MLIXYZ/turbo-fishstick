@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Box, Container, Typography } from '@mui/material';
 import Header from './components/Header';
 import Home from './pages/Home';
+import Profile from './pages/profile';
 import ROUTES from './config/routes';
 
 function App() {
@@ -67,8 +68,10 @@ function App() {
             </Box>
           }
         />
-        <Route path={ROUTES.LOGIN} element={<Login />} />
-        <Route path={ROUTES.SIGNUP} element={<SignUp />} />
+          {/* commenting these out for now bc nodemon keeps crashing otherwise */}
+          {/* <Route path={ROUTES.LOGIN} element={<Login />} /> */}
+          {/* <Route path={ROUTES.SIGNUP} element={<SignUp />} /> */}
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
   );

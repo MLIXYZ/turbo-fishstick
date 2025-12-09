@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-import { Category, Product, syncDatabase } from './models';
+import { Category, Product, syncDatabase, User, Order } from './models';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -87,6 +87,38 @@ app.get('/api/products/:id', async (req: Request, res: Response): Promise<void> 
 
 app.get('/', (_req: Request, res: Response): void => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// for customer profile page
+// customer profile info:
+app.get('/api/users/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = await User.findByPk(req.params.id, {
+      attributes: ['id', 'email', 'first_name', 'last_name', 'username', 'phone', 'avatar_url', 'is_verified', 'balance', 'last_login', 'created_at', 'updated_at']
+    });
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+// customer orders
+app.get('/api/users/:id/orders', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const orders = await Order.findAll({
+      order: [['created_at', 'DESC']],
+      where: { user_id: req.params.id },
+      include: [{ model: Product, as: 'product' }]
+    })
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ error: 'Failed to fetch orders' });
+  }
 });
 
 app.listen(PORT, () => {
