@@ -6,7 +6,6 @@ import {
     Button,
     Stack,
     Paper,
-    Divider,
     TextField,
 } from '@mui/material';
 import axios from 'axios';
@@ -37,6 +36,22 @@ function getCart(): CartItem[] {
     }
 }
 
+function validateEmail(email: string) {
+    return /\S+@\S+\.\S+/.test(email);
+}
+
+function validateCardNumber(num: string) {
+    return /^[0-9]{13,19}$/.test(num.replace(/\s+/g, ""));
+}
+
+function validateCVV(cvv: string) {
+    return /^[0-9]{3,4}$/.test(cvv);
+}
+
+function validateExpiry(exp: string) {
+    return /^(0[1-9]|1[0-2])\/\d{2}$/.test(exp);
+}
+
 function Checkout({
                       searchQuery: _searchQuery,
                       mobileDrawerOpen: _mobileDrawerOpen,
@@ -46,6 +61,9 @@ function Checkout({
     const [billingName, setBillingName] = useState('');
     const [billingEmail, setBillingEmail] = useState('');
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [cardNumber, setCardNumber] = useState('');
+    const [expiry, setExpiry] = useState('');
+    const [cvv, setCvv] = useState('');
     const [placingOrder, setPlacingOrder] = useState(false);
 
     const navigate = useNavigate();
@@ -63,9 +81,34 @@ function Checkout({
     const total = +(subtotal + tax).toFixed(2);
 
     const handlePlaceOrder = async () => {
-        if (!billingName || !billingEmail) {
-            alert('Please enter your name and email.');
+        if (!billingName) {
+            alert("Please enter your full name.");
             return;
+        }
+
+        if (!validateEmail(billingEmail)) {
+            alert("Please enter a valid email address.");
+            return;
+        }
+
+        if (cartItems.length === 0) {
+            alert("Your cart is empty.");
+            return;
+        }
+
+        if (paymentMethod === "card") {
+            if (!validateCardNumber(cardNumber)) {
+                alert("Invalid card number.");
+                return;
+            }
+            if (!validateExpiry(expiry)) {
+                alert("Invalid expiry format (MM/YY).");
+                return;
+            }
+            if (!validateCVV(cvv)) {
+                alert("Invalid CVV.");
+                return;
+            }
         }
 
         if (cartItems.length === 0) {
@@ -126,7 +169,7 @@ function Checkout({
 
                 <Paper sx={{ p: 2, mb: 3 }}>
                     <Typography variant="h6" gutterBottom>
-                        Payment Details (placeholder)
+                        Payment Details
                     </Typography>
 
                     <TextField
@@ -154,6 +197,8 @@ function Checkout({
                                 placeholder="1234 5678 9012 3456"
                                 fullWidth
                                 margin="normal"
+                                value={cardNumber}
+                                onChange={(e) => setCardNumber(e.target.value)}
                             />
                             <Box sx={{ display: 'flex', gap: 2 }}>
                                 <TextField
@@ -161,12 +206,16 @@ function Checkout({
                                     placeholder="MM/YY"
                                     margin="normal"
                                     fullWidth
+                                    value={expiry}
+                                    onChange={(e) => setExpiry(e.target.value)}
                                 />
                                 <TextField
                                     label="CVV"
                                     placeholder="123"
                                     margin="normal"
                                     fullWidth
+                                    value={cvv}
+                                    onChange={(e) => setCvv(e.target.value)}
                                 />
                             </Box>
                         </Box>
@@ -178,16 +227,13 @@ function Checkout({
                                 fullWidth
                                 margin="normal"
                             />
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                will add qr code later
-                            </Typography>
                         </Box>
                     )}
                 </Paper>
 
                 <Paper sx={{ p: 2, mb: 3 }}>
                     <Typography variant="h6" gutterBottom>
-                        Payment Method (placeholder)
+                        Payment Method
                     </Typography>
 
                     <Stack
@@ -226,7 +272,7 @@ function Checkout({
                                 Subtotal: ${subtotal.toFixed(2)}
                             </Typography>
                             <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                Tax (placeholder 10%): ${tax.toFixed(2)}
+                                Tax (10%): ${tax.toFixed(2)}
                             </Typography>
                             <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2 }}>
                                 Total: ${total.toFixed(2)}
