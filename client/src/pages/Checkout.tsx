@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 import {
     Box,
     Container,
@@ -7,126 +7,127 @@ import {
     Stack,
     Paper,
     TextField,
-} from '@mui/material';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-const API_URL = 'http://localhost:3000/api';
-import ROUTES from '../config/routes';
-import {useAuthStore} from "../store/authStore.ts";
-
+} from '@mui/material'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
+const API_URL = 'http://localhost:3000/api'
+import ROUTES from '../config/routes'
+import { useAuthStore } from '../store/authStore.ts'
 
 interface CartItem {
-    productId: number;
-    title: string;
-    price: number;
-    quantity: number;
-    image_url?: string;
+    productId: number
+    title: string
+    price: number
+    quantity: number
+    image_url?: string
 }
 
 function getCart(): CartItem[] {
     try {
-        const raw = localStorage.getItem('shopping_cart_v1');
-        return raw ? JSON.parse(raw) : [];
+        const raw = localStorage.getItem('shopping_cart_v1')
+        return raw ? JSON.parse(raw) : []
     } catch {
-        return [];
+        return []
     }
 }
 
 function validateEmail(email: string) {
-    return /\S+@\S+\.\S+/.test(email);
+    return /\S+@\S+\.\S+/.test(email)
 }
 
 function validateCardNumber(num: string) {
-    return /^[0-9]{13,19}$/.test(num.replace(/\s+/g, ""));
+    return /^[0-9]{13,19}$/.test(num.replace(/\s+/g, ''))
 }
 
 function validateCVV(cvv: string) {
-    return /^[0-9]{3,4}$/.test(cvv);
+    return /^[0-9]{3,4}$/.test(cvv)
 }
 
 function validateExpiry(exp: string) {
-    return /^(0[1-9]|1[0-2])\/\d{2}$/.test(exp);
+    return /^(0[1-9]|1[0-2])\/\d{2}$/.test(exp)
 }
 
 function Checkout() {
-    const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto'>('card');
-    const [billingName, setBillingName] = useState('');
-    const [billingEmail, setBillingEmail] = useState('');
-    const [cartItems, setCartItems] = useState<CartItem[]>([]);
-    const [cardNumber, setCardNumber] = useState('');
-    const [expiry, setExpiry] = useState('');
-    const [cvv, setCvv] = useState('');
-    const [placingOrder, setPlacingOrder] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto'>(
+        'card'
+    )
+    const [billingName, setBillingName] = useState('')
+    const [billingEmail, setBillingEmail] = useState('')
+    const [cartItems, setCartItems] = useState<CartItem[]>([])
+    const [cardNumber, setCardNumber] = useState('')
+    const [expiry, setExpiry] = useState('')
+    const [cvv, setCvv] = useState('')
+    const [placingOrder, setPlacingOrder] = useState(false)
 
-    const navigate = useNavigate();
+    const navigate = useNavigate()
 
-    const user = useAuthStore((state) => state.user);
+    const user = useAuthStore((state) => state.user)
 
     useEffect(() => {
-        setCartItems(getCart());
-    }, []);
+        setCartItems(getCart())
+    }, [])
 
     //prefill info if logged in
     useEffect(() => {
-        if (!user) return;
+        if (!user) return
 
-        setBillingEmail((prev) => prev || user.email);
+        setBillingEmail((prev) => prev || user.email)
 
         const fullName = [user.first_name, user.last_name]
             .filter(Boolean)
-            .join(' ');
+            .join(' ')
 
         if (fullName) {
-            setBillingName((prev) => prev || fullName);
+            setBillingName((prev) => prev || fullName)
         }
-    }, [user]);
+    }, [user])
 
     const subtotal = cartItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
-    );
+    )
 
-    const tax = +(subtotal * 0.1).toFixed(2); // 10% just as an example
-    const total = +(subtotal + tax).toFixed(2);
+    const tax = +(subtotal * 0.1).toFixed(2) // 10% just as an example
+    const total = +(subtotal + tax).toFixed(2)
 
     const handlePlaceOrder = async () => {
         if (!billingName) {
-            alert("Please enter your full name.");
-            return;
+            alert('Please enter your full name.')
+            return
         }
 
         if (!validateEmail(billingEmail)) {
-            alert("Please enter a valid email address.");
-            return;
+            alert('Please enter a valid email address.')
+            return
         }
 
         if (cartItems.length === 0) {
-            alert("Your cart is empty.");
-            return;
+            alert('Your cart is empty.')
+            return
         }
 
-        if (paymentMethod === "card") {
+        if (paymentMethod === 'card') {
             if (!validateCardNumber(cardNumber)) {
-                alert("Invalid card number.");
-                return;
+                alert('Invalid card number.')
+                return
             }
             if (!validateExpiry(expiry)) {
-                alert("Invalid expiry format (MM/YY).");
-                return;
+                alert('Invalid expiry format (MM/YY).')
+                return
             }
             if (!validateCVV(cvv)) {
-                alert("Invalid CVV.");
-                return;
+                alert('Invalid CVV.')
+                return
             }
         }
 
         if (cartItems.length === 0) {
-            alert('Your cart is empty.');
-            return;
+            alert('Your cart is empty.')
+            return
         }
 
         try {
-            setPlacingOrder(true);
+            setPlacingOrder(true)
 
             const payload = {
                 cartItems,
@@ -136,24 +137,24 @@ function Checkout() {
                 paymentMethod,
                 billing_name: billingName,
                 billing_email: billingEmail,
-            };
+            }
 
-            const res = await axios.post(`${API_URL}/checkout`, payload);
+            const res = await axios.post(`${API_URL}/checkout`, payload)
 
-            console.log('Order created:', res.data);
+            console.log('Order created:', res.data)
 
-            localStorage.setItem('shopping_cart_v1', '[]');
-            setCartItems([]);
+            localStorage.setItem('shopping_cart_v1', '[]')
+            setCartItems([])
 
-            alert('Order placed successfully!.');
-            navigate(ROUTES.HOME);
+            alert('Order placed successfully!.')
+            navigate(ROUTES.HOME)
         } catch (err) {
-            console.error('Checkout failed:', err);
-            alert('Checkout failed.');
+            console.error('Checkout failed:', err)
+            alert('Checkout failed.')
         } finally {
-            setPlacingOrder(false);
+            setPlacingOrder(false)
         }
-    };
+    }
 
     return (
         <Box
@@ -251,14 +252,22 @@ function Checkout() {
                         sx={{ mb: 2 }}
                     >
                         <Button
-                            variant={paymentMethod === 'card' ? 'contained' : 'outlined'}
+                            variant={
+                                paymentMethod === 'card'
+                                    ? 'contained'
+                                    : 'outlined'
+                            }
                             onClick={() => setPaymentMethod('card')}
                         >
                             Credit Card
                         </Button>
 
                         <Button
-                            variant={paymentMethod === 'crypto' ? 'contained' : 'outlined'}
+                            variant={
+                                paymentMethod === 'crypto'
+                                    ? 'contained'
+                                    : 'outlined'
+                            }
                             onClick={() => setPaymentMethod('crypto')}
                         >
                             Crypto
@@ -283,24 +292,32 @@ function Checkout() {
                             <Typography variant="body2" sx={{ mb: 0.5 }}>
                                 Tax (10%): ${tax.toFixed(2)}
                             </Typography>
-                            <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2 }}>
+                            <Typography
+                                variant="subtitle1"
+                                fontWeight="bold"
+                                sx={{ mb: 2 }}
+                            >
                                 Total: ${total.toFixed(2)}
                             </Typography>
 
                             <Button
                                 variant="contained"
                                 color="primary"
-                                disabled={placingOrder || cartItems.length === 0}
+                                disabled={
+                                    placingOrder || cartItems.length === 0
+                                }
                                 onClick={handlePlaceOrder}
                             >
-                                {placingOrder ? 'Placing Order...' : 'Place Order'}
+                                {placingOrder
+                                    ? 'Placing Order...'
+                                    : 'Place Order'}
                             </Button>
                         </>
                     )}
                 </Paper>
             </Container>
         </Box>
-    );
+    )
 }
 
-export default Checkout;
+export default Checkout

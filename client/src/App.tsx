@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Box, Container, Typography } from '@mui/material';
-import Header from './components/Header';
-import Home from './pages/Home';
+import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Box, Container, Typography } from '@mui/material'
+import Header from './components/Header'
+import Home from './pages/Home'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
-import ROUTES from './config/routes';
-import Cart from "./pages/Cart.tsx";
-import Checkout from "./pages/Checkout.tsx";
+import ROUTES from './config/routes'
+import Cart from './pages/Cart.tsx'
+import Checkout from './pages/Checkout.tsx'
 
 function App() {
     const [searchQuery, setSearchQuery] = useState('')
@@ -15,17 +15,17 @@ function App() {
     // TODO: Implement dynamic cart state management
     const [cartItemCount] = useState<number>(0)
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
+    const handleSearch = (query: string) => {
+        setSearchQuery(query)
+    }
 
-  const handleMenuClick = () => {
-    setMobileDrawerOpen(true);
-  };
+    const handleMenuClick = () => {
+        setMobileDrawerOpen(true)
+    }
 
-  const handleDrawerClose = () => {
-    setMobileDrawerOpen(false);
-  };
+    const handleDrawerClose = () => {
+        setMobileDrawerOpen(false)
+    }
 
     return (
         <Router>
@@ -104,8 +104,7 @@ function App() {
                                 cartItemCount={cartItemCount}
                             />
 
-                            <Cart
-                            />
+                            <Cart />
 
                             <Box
                                 component="footer"
@@ -120,11 +119,19 @@ function App() {
                             >
                                 <Container maxWidth="xl">
                                     <Box sx={{ textAlign: 'center' }}>
-                                        <Typography variant="h6" fontWeight={600} gutterBottom>
+                                        <Typography
+                                            variant="h6"
+                                            fontWeight={600}
+                                            gutterBottom
+                                        >
                                             🎮 Game Key Store
                                         </Typography>
-                                        <Typography variant="body2" color="grey.400">
-                                            &copy; 2025 Game Key Store - Group 5. All rights reserved.
+                                        <Typography
+                                            variant="body2"
+                                            color="grey.400"
+                                        >
+                                            &copy; 2025 Game Key Store - Group
+                                            5. All rights reserved.
                                         </Typography>
                                     </Box>
                                 </Container>
@@ -169,11 +176,19 @@ function App() {
                             >
                                 <Container maxWidth="xl">
                                     <Box sx={{ textAlign: 'center' }}>
-                                        <Typography variant="h6" fontWeight={600} gutterBottom>
+                                        <Typography
+                                            variant="h6"
+                                            fontWeight={600}
+                                            gutterBottom
+                                        >
                                             🎮 Game Key Store
                                         </Typography>
-                                        <Typography variant="body2" color="grey.400">
-                                            &copy; 2025 Game Key Store - Group 5. All rights reserved.
+                                        <Typography
+                                            variant="body2"
+                                            color="grey.400"
+                                        >
+                                            &copy; 2025 Game Key Store - Group
+                                            5. All rights reserved.
                                         </Typography>
                                     </Box>
                                 </Container>
@@ -189,4 +204,4 @@ function App() {
     )
 }
 
-export default App;
+export default App

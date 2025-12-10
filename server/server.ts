@@ -40,7 +40,7 @@ app.get(
 app.get('/api/products', async (req: Request, res: Response): Promise<void> => {
     try {
         const { category, search } = req.query
-        const where: Record<string | symbol, unknown> = {};
+        const where: Record<string | symbol, unknown> = {}
 
         if (category) {
             where.category_id = category

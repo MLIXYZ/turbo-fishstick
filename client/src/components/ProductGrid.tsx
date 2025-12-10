@@ -8,31 +8,31 @@ import {
     Button,
     Box,
     Chip,
-    Snackbar
-} from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCartPlus } from '@fortawesome/free-solid-svg-icons';
-import {type JSX, useState} from 'react';
+    Snackbar,
+} from '@mui/material'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCartPlus } from '@fortawesome/free-solid-svg-icons'
+import { type JSX, useState } from 'react'
 
 interface Product {
-    id: number;
-    title: string;
-    description: string;
-    price: number;
-    image_url?: string;
-    platform?: string;
+    id: number
+    title: string
+    description: string
+    price: number
+    image_url?: string
+    platform?: string
 }
 
 interface CartItem {
-    productId: number;
-    title: string;
-    price: number;
-    quantity: number;
-    image_url?: string;
+    productId: number
+    title: string
+    price: number
+    quantity: number
+    image_url?: string
 }
 
 interface ProductGridProps {
-    products: Product[];
+    products: Product[]
 }
 
 const placeholderColors = [
@@ -43,11 +43,11 @@ const placeholderColors = [
     '#fa709a',
     '#30cfd0',
     '#a8edea',
-    '#ff9a56'
-];
+    '#ff9a56',
+]
 
 function ProductGrid({ products }: ProductGridProps): JSX.Element {
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarOpen, setSnackbarOpen] = useState(false)
 
     if (products.length === 0) {
         return (
@@ -56,50 +56,51 @@ function ProductGrid({ products }: ProductGridProps): JSX.Element {
                     No products found
                 </Typography>
             </Box>
-        );
+        )
     }
 
     const handleAddToCart = (productId: number) => {
-        const product = products.find((p) => p.id === productId);
-        if (!product) return;
+        const product = products.find((p) => p.id === productId)
+        if (!product) return
 
-        const raw = localStorage.getItem('shopping_cart_v1');
-        let cart: CartItem[];
+        const raw = localStorage.getItem('shopping_cart_v1')
+        let cart: CartItem[]
 
         try {
-            const parsed = raw ? JSON.parse(raw) : [];
-            cart = Array.isArray(parsed) ? parsed : [];
+            const parsed = raw ? JSON.parse(raw) : []
+            cart = Array.isArray(parsed) ? parsed : []
         } catch {
-            cart = [];
+            cart = []
         }
 
-        const existing = cart.find((item) => item.productId === product.id);
+        const existing = cart.find((item) => item.productId === product.id)
 
         if (existing) {
-            existing.quantity += 1;
+            existing.quantity += 1
         } else {
             cart.push({
                 productId: product.id,
                 title: product.title,
                 price: product.price,
                 quantity: 1,
-                image_url: product.image_url
-            });
+                image_url: product.image_url,
+            })
         }
 
-        localStorage.setItem('shopping_cart_v1', JSON.stringify(cart));
+        localStorage.setItem('shopping_cart_v1', JSON.stringify(cart))
 
-        console.log('Added to cart:', product.title);
-        setSnackbarOpen(true);
-
-
-    };
+        console.log('Added to cart:', product.title)
+        setSnackbarOpen(true)
+    }
 
     return (
         <>
             <Grid container spacing={3}>
                 {products.map((product, index) => (
-                    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product.id}>
+                    <Grid
+                        size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                        key={product.id}
+                    >
                         <Card
                             elevation={2}
                             sx={{
@@ -109,8 +110,8 @@ function ProductGrid({ products }: ProductGridProps): JSX.Element {
                                 transition: 'transform 0.2s, box-shadow 0.2s',
                                 '&:hover': {
                                     transform: 'translateY(-4px)',
-                                    boxShadow: 4
-                                }
+                                    boxShadow: 4,
+                                },
                             }}
                         >
                             <Box
@@ -118,10 +119,12 @@ function ProductGrid({ products }: ProductGridProps): JSX.Element {
                                     height: 180,
                                     bgcolor: product.image_url
                                         ? 'grey.200'
-                                        : placeholderColors[index % placeholderColors.length],
+                                        : placeholderColors[
+                                              index % placeholderColors.length
+                                          ],
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center'
+                                    justifyContent: 'center',
                                 }}
                             >
                                 {product.image_url ? (
@@ -132,14 +135,22 @@ function ProductGrid({ products }: ProductGridProps): JSX.Element {
                                         alt={product.title}
                                     />
                                 ) : (
-                                    <Typography variant="h2" color="white" sx={{ opacity: 0.5 }}>
+                                    <Typography
+                                        variant="h2"
+                                        color="white"
+                                        sx={{ opacity: 0.5 }}
+                                    >
                                         🎮
                                     </Typography>
                                 )}
                             </Box>
 
                             <CardContent
-                                sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
+                                sx={{
+                                    flexGrow: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                }}
                             >
                                 <Typography
                                     variant="h6"
@@ -170,7 +181,7 @@ function ProductGrid({ products }: ProductGridProps): JSX.Element {
                                         display: '-webkit-box',
                                         WebkitLineClamp: 2,
                                         WebkitBoxOrient: 'vertical',
-                                        mb: 2
+                                        mb: 2,
                                     }}
                                 >
                                     {product.description}
@@ -192,7 +203,9 @@ function ProductGrid({ products }: ProductGridProps): JSX.Element {
                                     variant="contained"
                                     color="primary"
                                     fullWidth
-                                    startIcon={<FontAwesomeIcon icon={faCartPlus} />}
+                                    startIcon={
+                                        <FontAwesomeIcon icon={faCartPlus} />
+                                    }
                                     onClick={() => handleAddToCart(product.id)}
                                 >
                                     Add to Cart
@@ -210,7 +223,7 @@ function ProductGrid({ products }: ProductGridProps): JSX.Element {
                 message="Added to cart"
             />
         </>
-    );
+    )
 }
 
-export default ProductGrid;
+export default ProductGrid
