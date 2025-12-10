@@ -198,11 +198,9 @@ export default function Profile() {
                                     ))}
                                 </List>
                                 )}
-
                         </Paper>
                     </Grid>
                 </Grid>
-
             </Box>
         </Box>
     );

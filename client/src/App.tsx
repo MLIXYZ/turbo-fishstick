@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Home from './pages/Home';
 import Profile from './pages/profile';
 import ROUTES from './config/routes';
+import Admin from "./pages/admin.tsx";
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,6 +73,7 @@ function App() {
           {/* <Route path={ROUTES.LOGIN} element={<Login />} /> */}
           {/* <Route path={ROUTES.SIGNUP} element={<SignUp />} /> */}
         <Route path="/profile" element={<Profile />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </Router>
   );

@@ -2,7 +2,9 @@ import {
     AppBar,
     Toolbar,
     Typography,
-    Box, Badge, IconButton
+    Box,
+    Badge,
+    IconButton
 } from "@mui/material";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
