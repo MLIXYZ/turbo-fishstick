@@ -112,7 +112,6 @@ app.get('/api/users/:id/orders', async (req: Request, res: Response): Promise<vo
     const orders = await Order.findAll({
       order: [['created_at', 'DESC']],
       where: { user_id: req.params.id },
-      include: [{ model: Product, as: 'product' }]
     })
     res.json(orders);
   } catch (error) {
