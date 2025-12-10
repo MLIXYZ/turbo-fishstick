@@ -13,7 +13,10 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { useNavigate } from 'react-router-dom';
 import ROUTES from '../config/routes';
 import axios from 'axios';
+import {useAuthStore} from "../store/authStore.ts";
 const API_URL = 'http://localhost:3000/api';
+
+const cart = getCart();
 
 interface CartProps {
     searchQuery: string;
@@ -44,7 +47,6 @@ function updateQuantity(productId: number, newQty: number) {
             ? { ...item, quantity: Math.max(newQty, 1) }
             : item
     );
-
     localStorage.setItem("shopping_cart_v1", JSON.stringify(cart));
     return cart;
 }
@@ -56,13 +58,21 @@ function Cart({
               }: CartProps) {
     const theme = useTheme();
     useMediaQuery(theme.breakpoints.down('md'));
-
     const navigate = useNavigate();
-    const isLoggedIn = false;
+
+    //Checks if user is logged in
+    const user = useAuthStore((state) => state.user);
+    const isLoggedIn = !!user;
 
     const [stockMap, setStockMap] = useState<Record<number, number | null>>({});
     const [stockLoading, setStockLoading] = useState(true);
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+    useEffect(() => {
+        console.log('Loaded cart from localStorage: ', cart)
+        setCartItems(getCart());
+    }, []);
+
 
     useEffect(() => {
         async function fetchStock() {

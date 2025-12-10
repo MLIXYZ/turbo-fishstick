@@ -1,7 +1,7 @@
 {
   "name": "video-game-key-platform",
   "version": "1.0.0",
-  "description": "Group 5 Projectr",
+  "description": "Group 5 Project",
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",

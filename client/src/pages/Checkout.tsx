@@ -12,6 +12,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 const API_URL = 'http://localhost:3000/api';
 import ROUTES from '../config/routes';
+import {useAuthStore} from "../store/authStore.ts";
 
 interface CheckoutProps {
     searchQuery: string;
@@ -68,9 +69,26 @@ function Checkout({
 
     const navigate = useNavigate();
 
+    const user = useAuthStore((state) => state.user);
+
     useEffect(() => {
         setCartItems(getCart());
     }, []);
+
+    //prefill info if logged in
+    useEffect(() => {
+        if (!user) return;
+
+        setBillingEmail((prev) => prev || user.email);
+
+        const fullName = [user.first_name, user.last_name]
+            .filter(Boolean)
+            .join(' ');
+
+        if (fullName) {
+            setBillingName((prev) => prev || fullName);
+        }
+    }, [user]);
 
     const subtotal = cartItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
