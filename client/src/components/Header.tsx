@@ -19,6 +19,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import SearchBar from './SearchBar'
 import ROUTES from '../config/routes'
+import type { JSX } from 'react'
 
 interface HeaderProps {
     onSearch: (query: string) => void
@@ -36,7 +37,7 @@ function Header({
     const navigate = useNavigate()
 
     const handleCartClick = () => {
-        // TODO: Implement cart modal/page navigation
+        navigate(ROUTES.CART)
         console.log('Cart clicked')
     }
 
