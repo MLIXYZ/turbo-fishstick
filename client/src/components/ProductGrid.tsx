@@ -23,6 +23,14 @@ interface Product {
     platform?: string;
 }
 
+interface CartItem {
+    productId: number;
+    title: string;
+    price: number;
+    quantity: number;
+    image_url?: string;
+}
+
 interface ProductGridProps {
     products: Product[];
 }
@@ -56,10 +64,11 @@ function ProductGrid({ products }: ProductGridProps): JSX.Element {
         if (!product) return;
 
         const raw = localStorage.getItem('shopping_cart_v1');
-        let cart: any[] = [];
+        let cart: CartItem[];
 
         try {
-            cart = raw ? JSON.parse(raw) : [];
+            const parsed = raw ? JSON.parse(raw) : [];
+            cart = Array.isArray(parsed) ? parsed : [];
         } catch {
             cart = [];
         }

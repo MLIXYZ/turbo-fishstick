@@ -14,11 +14,6 @@ const API_URL = 'http://localhost:3000/api';
 import ROUTES from '../config/routes';
 import {useAuthStore} from "../store/authStore.ts";
 
-interface CheckoutProps {
-    searchQuery: string;
-    mobileDrawerOpen: boolean;
-    onDrawerClose: () => void;
-}
 
 interface CartItem {
     productId: number;
@@ -53,11 +48,7 @@ function validateExpiry(exp: string) {
     return /^(0[1-9]|1[0-2])\/\d{2}$/.test(exp);
 }
 
-function Checkout({
-                      searchQuery: _searchQuery,
-                      mobileDrawerOpen: _mobileDrawerOpen,
-                      onDrawerClose: _onDrawerClose,
-                  }: CheckoutProps) {
+function Checkout() {
     const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto'>('card');
     const [billingName, setBillingName] = useState('');
     const [billingEmail, setBillingEmail] = useState('');

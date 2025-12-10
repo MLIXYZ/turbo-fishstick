@@ -105,9 +105,6 @@ function App() {
                             />
 
                             <Cart
-                                searchQuery={searchQuery}
-                                mobileDrawerOpen={mobileDrawerOpen}
-                                onDrawerClose={handleDrawerClose}
                             />
 
                             <Box

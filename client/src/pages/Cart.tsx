@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import {
     Box,
     Container,
@@ -10,19 +10,12 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import ROUTES from '../config/routes';
 import axios from 'axios';
 import {useAuthStore} from "../store/authStore.ts";
+
 const API_URL = 'http://localhost:3000/api';
-
-const cart = getCart();
-
-interface CartProps {
-    searchQuery: string;
-    mobileDrawerOpen: boolean;
-    onDrawerClose: () => void;
-}
 
 interface CartItem {
     productId: number;
@@ -44,18 +37,14 @@ function getCart(): CartItem[] {
 function updateQuantity(productId: number, newQty: number) {
     const cart = getCart().map((item) =>
         item.productId === productId
-            ? { ...item, quantity: Math.max(newQty, 1) }
+            ? {...item, quantity: Math.max(newQty, 1)}
             : item
     );
     localStorage.setItem("shopping_cart_v1", JSON.stringify(cart));
     return cart;
 }
 
-function Cart({
-                  searchQuery: _searchQuery,
-                  mobileDrawerOpen: _mobileDrawerOpen,
-                  onDrawerClose: _onDrawerClose,
-              }: CartProps) {
+function Cart() {
     const theme = useTheme();
     useMediaQuery(theme.breakpoints.down('md'));
     const navigate = useNavigate();
@@ -66,13 +55,7 @@ function Cart({
 
     const [stockMap, setStockMap] = useState<Record<number, number | null>>({});
     const [stockLoading, setStockLoading] = useState(true);
-    const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-    useEffect(() => {
-        console.log('Loaded cart from localStorage: ', cart)
-        setCartItems(getCart());
-    }, []);
-
+    const [cartItems, setCartItems] = useState<CartItem[]>(() => getCart());
 
     useEffect(() => {
         async function fetchStock() {
@@ -133,8 +116,8 @@ function Cart({
                 display: 'flex',
             }}
         >
-            <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
-                <Box sx={{ mb: { xs: 2, md: 3 } }}>
+            <Container maxWidth="xl" sx={{py: {xs: 2, md: 3}}}>
+                <Box sx={{mb: {xs: 2, md: 3}}}>
                     <Typography variant="h4" fontWeight="bold">
                         Shopping Cart
                     </Typography>
@@ -177,7 +160,7 @@ function Cart({
                                         size="small"
                                         onClick={() => handleChangeQuantity(item.productId, -1)}
                                     >
-                                        <RemoveIcon fontSize="small" />
+                                        <RemoveIcon fontSize="small"/>
                                     </IconButton>
 
                                     <Typography variant="body1">{item.quantity}</Typography>
@@ -190,11 +173,11 @@ function Cart({
                                             item.quantity >= (stockMap[item.productId] as number)
                                         }
                                     >
-                                        <AddIcon fontSize="small" />
+                                        <AddIcon fontSize="small"/>
                                     </IconButton>
                                 </Box>
 
-                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                <Box sx={{flexGrow: 1, minWidth: 0}}>
                                     <Typography variant="subtitle1">{item.title}</Typography>
                                     <Typography variant="body2" color="text.secondary">
                                         ${item.price.toFixed(2)} × {item.quantity}
@@ -222,11 +205,11 @@ function Cart({
                             </Box>
                         ))}
 
-                        <Typography variant="h6" sx={{ mt: 3 }}>
+                        <Typography variant="h6" sx={{mt: 3}}>
                             Subtotal: ${subtotal.toFixed(2)}
                         </Typography>
 
-                        <Box sx={{ mt: 2 }}>
+                        <Box sx={{mt: 2}}>
                             <Button
                                 variant="contained"
                                 color="primary"

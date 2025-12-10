@@ -9,6 +9,7 @@ import {
     useMediaQuery,
     useTheme,
 } from '@mui/material'
+import type {JSX} from "react";
 
 interface Category {
     id: number
