@@ -29,7 +29,6 @@ This platform provides a seamless marketplace for buying and selling digital vid
 - **ESLint**
 - **Vite**
 - **Concurrently**
-- **Github CI/CD**
 
 ## Quick Start
 
