@@ -30,10 +30,12 @@ export default function AdminSidebar(): JSX.Element {
                             selected={location.pathname === ROUTES.ADMIN_PRODUCTS}
                             onClick={() => {navigate(ROUTES.ADMIN_PRODUCTS)}}
                             sx={{
-                            borderRadius: 1,
-                            borderLeftColor: 'primary.main',
-                            '&.Mui-selected': { borderLeft: 4 }
-                        }}>
+                                borderRadius: 1,
+                                '&.Mui-selected': {
+                                borderLeft: 4,
+                                borderLeftColor: 'primary.main'
+                            }
+                            }}>
                             <FontAwesomeIcon icon={faBoxesStacked} />
                             <ListItemText primary="Products" sx={{ px: 1 }}/>
                         </ListItemButton>
@@ -45,8 +47,10 @@ export default function AdminSidebar(): JSX.Element {
                             onClick={() => {navigate(ROUTES.ADMIN_ORDERS)}}
                             sx={{
                                 borderRadius: 1,
-                                borderLeftColor: 'primary.main',
-                                '&.Mui-selected': { borderLeft: 4 }
+                                '&.Mui-selected': {
+                                    borderLeft: 4,
+                                    borderLeftColor: 'primary.main'
+                                }
                             }}>
                             <FontAwesomeIcon icon={faTruck} />
                             <ListItemText primary="Orders" sx={{ px: 1 }}/>
@@ -59,8 +63,10 @@ export default function AdminSidebar(): JSX.Element {
                             onClick={() => {navigate(ROUTES.ADMIN_USERS)}}
                             sx={{
                                 borderRadius: 1,
-                                borderLeftColor: 'primary.main',
-                                '&.Mui-selected': { borderLeft: 4 }
+                                '&.Mui-selected': {
+                                    borderLeft: 4,
+                                    borderLeftColor: 'primary.main'
+                                }
                             }}>
                             <FontAwesomeIcon icon={faUser} />
                             <ListItemText primary="Users" sx={{ px: 1 }}/>
@@ -73,8 +79,10 @@ export default function AdminSidebar(): JSX.Element {
                             onClick={() => {navigate(ROUTES.ADMIN_DISCOUNT_CODES)}}
                             sx={{
                                 borderRadius: 1,
-                                borderLeftColor: 'primary.main',
-                                '&.Mui-selected': { borderLeft: 4 }
+                                '&.Mui-selected': {
+                                    borderLeft: 4,
+                                    borderLeftColor: 'primary.main'
+                                }
                             }}>
                             <FontAwesomeIcon icon={faTicket} />
                             <ListItemText primary="Discount Codes" sx={{ px: 1 }}/>

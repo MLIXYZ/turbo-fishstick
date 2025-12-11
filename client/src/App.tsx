@@ -6,6 +6,10 @@ import Home from './pages/Home';
 import Profile from './pages/profile';
 import ROUTES from './config/routes';
 import Admin from "./pages/admin.tsx";
+import AdminProducts from './pages/AdminProducts.tsx';
+import AdminOrders from './pages/AdminOrders.tsx';
+import AdminUsers from './pages/AdminUsers.tsx';
+import AdminDiscountCodes from './pages/AdminDiscountCodes.tsx';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,6 +78,10 @@ function App() {
           {/* <Route path={ROUTES.SIGNUP} element={<SignUp />} /> */}
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/products" element={<AdminProducts />} />
+        <Route path="/admin/orders" element={<AdminOrders />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/discount-codes" element={<AdminDiscountCodes />} />
       </Routes>
     </Router>
   );
