@@ -47,10 +47,12 @@ app.get('/api/products', async (req: Request, res: Response): Promise<void> => {
         }
 
         if (search) {
-            where[Op.or] = [
-                { title: { [Op.like]: `%${search}%` } },
-                { description: { [Op.like]: `%${search}%` } },
-            ]
+            Object.assign(where, {
+                [Op.or]: [
+                    { title: { [Op.like]: `%${search}%` } },
+                    { description: { [Op.like]: `%${search}%` } },
+                ],
+            })
         }
 
         const products = await Product.findAll({
