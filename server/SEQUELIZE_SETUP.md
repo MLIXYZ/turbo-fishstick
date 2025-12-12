@@ -1,6 +1,7 @@
 ### Models
 
 ## Category
+
 - `id` (INTEGER, Primary Key, Auto Increment)
 - `name` (STRING, 100 chars, Unique, Not Null)
 - `description` (TEXT)
@@ -8,6 +9,7 @@
 - `updated_at` (DATE)
 
 ## Product
+
 - `id` (INTEGER, Primary Key, Auto Increment)
 - `title` (STRING, 255 chars, Not Null)
 - `description` (TEXT)
@@ -21,6 +23,7 @@
 - `updated_at` (DATE)
 
 ### Relationships
+
 - **Product** belongs to **Category** (one-to-many)
 - **Category** has many **Products**
 
