@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express'
 import path from 'path'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import { Op } from 'sequelize'
+import { Op, WhereOptions } from 'sequelize'
 
 dotenv.config()
 
@@ -40,7 +40,7 @@ app.get(
 app.get('/api/products', async (req: Request, res: Response): Promise<void> => {
     try {
         const { category, search } = req.query
-        const where: Record<string, unknown> = { is_active: true }
+        const where: WhereOptions = { is_active: true }
 
         if (category) {
             where.category_id = category
