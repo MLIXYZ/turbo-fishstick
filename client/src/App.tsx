@@ -7,11 +7,11 @@ import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import ROUTES from './config/routes'
 import Profile from './pages/profile';
-import Admin from "./pages/admin.tsx";
-import AdminProducts from './pages/AdminProducts.tsx';
-import AdminOrders from './pages/AdminOrders.tsx';
-import AdminUsers from './pages/AdminUsers.tsx';
-import AdminDiscountCodes from './pages/AdminDiscountCodes.tsx';
+import Admin from "./pages/admin";
+import AdminProducts from './pages/AdminProducts';
+import AdminOrders from './pages/AdminOrders';
+import AdminUsers from './pages/AdminUsers';
+import AdminDiscountCodes from './pages/AdminDiscountCodes';
 
 function App() {
     const [searchQuery, setSearchQuery] = useState('')
@@ -92,12 +92,12 @@ function App() {
                 />
                 <Route path={ROUTES.LOGIN} element={<Login />} />
                 <Route path={ROUTES.SIGNUP} element={<SignUp />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/products" element={<AdminProducts />} />
-                <Route path="/admin/orders" element={<AdminOrders />} />
-                <Route path="/admin/users" element={<AdminUsers />} />
-                <Route path="/admin/discount-codes" element={<AdminDiscountCodes />} />
+                <Route path={ROUTES.PROFILE} element={<Profile />} />
+                <Route path={ROUTES.ADMIN} element={<Admin />} />
+                <Route path={ROUTES.ADMIN_PRODUCTS} element={<AdminProducts />} />
+                <Route path={ROUTES.ADMIN_ORDERS} element={<AdminOrders />} />
+                <Route path={ROUTES.ADMIN_USERS} element={<AdminUsers />} />
+                <Route path={ROUTES.ADMIN_DISCOUNT_CODES} element={<AdminDiscountCodes />} />
             </Routes>
         </Router>
     )
