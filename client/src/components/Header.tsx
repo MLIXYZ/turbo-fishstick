@@ -19,7 +19,8 @@ import {
 import { useNavigate } from 'react-router-dom'
 import SearchBar from './SearchBar'
 import ROUTES from '../config/routes'
-import type { JSX } from 'react'
+import {type JSX, useEffect, useState} from 'react'
+import { getCart } from '../utils/cart'
 
 interface HeaderProps {
     onSearch: (query: string) => void
@@ -30,11 +31,30 @@ interface HeaderProps {
 function Header({
     onSearch,
     onMenuClick,
-    cartItemCount = 0,
 }: HeaderProps): JSX.Element {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('md'))
     const navigate = useNavigate()
+
+    const [cartCount, setCartCount] = useState(0)
+
+    useEffect(() => {
+        const updateCount = () => {
+            const cart = getCart()
+            const total = cart.reduce(
+                (sum, item) => sum + item.quantity,
+                0
+            )
+            setCartCount(total)
+        }
+
+        updateCount()
+        window.addEventListener('cart-updated', updateCount)
+
+        return () => {
+            window.removeEventListener('cart-updated', updateCount)
+        }
+    }, [])
 
     const handleCartClick = () => {
         navigate(ROUTES.CART)
@@ -117,9 +137,9 @@ function Header({
                         }}
                     >
                         <IconButton color="inherit" onClick={handleCartClick}>
-                            {cartItemCount > 0 ? (
+                            {cartCount > 0 ? (
                                 <Badge
-                                    badgeContent={cartItemCount}
+                                    badgeContent={cartCount}
                                     color="error"
                                 >
                                     <FontAwesomeIcon

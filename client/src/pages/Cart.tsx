@@ -8,41 +8,16 @@ import {
     Button,
     IconButton,
 } from '@mui/material'
+
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import { useNavigate } from 'react-router-dom'
 import ROUTES from '../config/routes'
 import axios from 'axios'
 import { useAuthStore } from '../store/authStore.ts'
-
-const API_URL = 'http://localhost:3000/api'
-
-interface CartItem {
-    productId: number
-    title: string
-    price: number
-    quantity: number
-    image_url?: string
-}
-
-function getCart(): CartItem[] {
-    try {
-        const raw = localStorage.getItem('shopping_cart_v1')
-        return raw ? JSON.parse(raw) : []
-    } catch {
-        return []
-    }
-}
-
-function updateQuantity(productId: number, newQty: number) {
-    const cart = getCart().map((item) =>
-        item.productId === productId
-            ? { ...item, quantity: Math.max(newQty, 1) }
-            : item
-    )
-    localStorage.setItem('shopping_cart_v1', JSON.stringify(cart))
-    return cart
-}
+import type { CartItem } from '../services/cart'
+import { getCart, updateQuantity, removeFromCart } from '../utils/cart'
+const API_URL = import.meta.env.VITE_API_URL
 
 function Cart() {
     const theme = useTheme()
@@ -58,30 +33,48 @@ function Cart() {
     const [cartItems, setCartItems] = useState<CartItem[]>(() => getCart())
 
     useEffect(() => {
-        async function fetchStock() {
+        const fetchStock = async () => {
             if (cartItems.length === 0) {
+                setStockMap({})
                 setStockLoading(false)
                 return
             }
 
-            const nextStockMap: Record<number, number | null> = {}
+            setStockLoading(true)
 
-            for (const item of cartItems) {
-                try {
-                    const res = await axios.get(
-                        `${API_URL}/products/${item.productId}`
+            // Get unique product IDs in case there are duplicates
+            const productIds = [...new Set(cartItems.map((item) => item.productId))]
+
+            try {
+                // Fire all requests in parallel
+                const responses = await Promise.all(
+                    productIds.map((id) =>
+                        axios.get(`${API_URL}/products/${id}`)
                     )
-                    nextStockMap[item.productId] =
-                        typeof res.data.stock === 'number'
-                            ? res.data.stock
-                            : null
-                } catch {
-                    nextStockMap[item.productId] = null
-                }
-            }
+                )
 
-            setStockMap(nextStockMap)
-            setStockLoading(false)
+                const nextStockMap: Record<number, number | null> = {}
+
+                responses.forEach((res, index) => {
+                    const id = productIds[index]
+                    const stock = res.data?.stock
+                    nextStockMap[id] =
+                        typeof stock === 'number' ? stock : null
+                })
+
+                setStockMap(nextStockMap)
+            } catch (err) {
+                console.error('Error fetching stock:', err)
+
+                // If one fails, mark all as unknown (or keep previous map if you prefer)
+                const fallback: Record<number, number | null> = {}
+                for (const id of productIds) {
+                    fallback[id] = null
+                }
+                setStockMap(fallback)
+            } finally {
+                setStockLoading(false)
+            }
         }
 
         fetchStock()
@@ -92,7 +85,11 @@ function Cart() {
             cartItems.find((i) => i.productId === productId)?.quantity || 1
         const newQty = currentQty + change
 
-        if (newQty < 1) return
+        if (newQty <= 0) {
+            const updated = removeFromCart(productId)
+            setCartItems(updated)
+            return
+        }
 
         if (
             stockMap[productId] != null &&
@@ -147,17 +144,39 @@ function Cart() {
                                     pb: 2,
                                     borderBottom: '1px solid #eee',
                                     display: 'flex',
-                                    alignItems: 'center',
+                                    flexDirection: { xs: 'column', sm: 'row' },
+                                    alignItems: { xs: 'stretch', sm: 'center' },
                                     gap: 2,
+                                    width: '100%',
                                 }}
                             >
+
+                                {item.image_url && (
+                                    <Box
+                                        component="img"
+                                        src={item.image_url}
+                                        alt={item.title}
+                                        sx={{
+                                            width: { xs: '100%', sm: 180 },
+                                            height: { xs: 150, sm: 90 },
+                                            objectFit: 'cover',
+                                            borderRadius: 1,
+                                            flexShrink: 0,
+                                            order: { xs: 0, sm: 0 },
+                                        }}
+                                    />
+                                )}
+
                                 <Box
                                     sx={{
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 1,
                                         flexShrink: 0,
-                                        minWidth: 90,
+                                        minWidth: { xs: '100%', sm: 90 },
+                                        width: { xs: '100%', sm: 'auto' },
+                                        justifyContent: { xs: 'flex-start', sm: 'flex-start' },
+                                        order: { xs: 3, sm: 1 },       // 👈 bottom on mobile, left on desktop
                                     }}
                                 >
                                     <IconButton
@@ -222,8 +241,9 @@ function Cart() {
                                 <Box
                                     sx={{
                                         flexShrink: 0,
-                                        minWidth: 80,
-                                        textAlign: 'right',
+                                        minWidth: { xs: '100%', sm: 80 },
+                                        textAlign: { xs: 'left', sm: 'right' },
+                                        order: { xs: 2, sm: 3 },
                                     }}
                                 >
                                     <Typography

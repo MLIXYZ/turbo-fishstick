@@ -19,6 +19,7 @@ export const ROUTES = {
     //  TODO
     CART: '/cart',
     CHECKOUT: '/checkout',
+    VALIDATE: '/checkout/validate-card',
 
     // TODO
     ADMIN: '/admin',

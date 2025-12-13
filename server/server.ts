@@ -8,6 +8,8 @@ dotenv.config()
 
 import { Category, Product, syncDatabase } from './models'
 import authRoutes from './routes/auth'
+import cardValidationRoutes from './routes/CardValidationRouter'
+import checkoutRoutes from './routes/CheckoutRouter'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -20,6 +22,12 @@ syncDatabase()
 
 // Auth routes
 app.use('/api/auth', authRoutes)
+
+// Card Validation
+app.use('/api/validate-card', cardValidationRoutes)
+
+// Checkout
+app.use('/api/checkout', checkoutRoutes)
 
 app.get(
     '/api/categories',

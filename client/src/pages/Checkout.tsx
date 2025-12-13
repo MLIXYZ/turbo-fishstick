@@ -10,47 +10,18 @@ import {
 } from '@mui/material'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-const API_URL = 'http://localhost:3000/api'
 import ROUTES from '../config/routes'
 import { useAuthStore } from '../store/authStore.ts'
-
-interface CartItem {
-    productId: number
-    title: string
-    price: number
-    quantity: number
-    image_url?: string
-}
-
-function getCart(): CartItem[] {
-    try {
-        const raw = localStorage.getItem('shopping_cart_v1')
-        return raw ? JSON.parse(raw) : []
-    } catch {
-        return []
-    }
-}
-
-function validateEmail(email: string) {
-    return /\S+@\S+\.\S+/.test(email)
-}
-
-function validateCardNumber(num: string) {
-    return /^[0-9]{13,19}$/.test(num.replace(/\s+/g, ''))
-}
-
-function validateCVV(cvv: string) {
-    return /^[0-9]{3,4}$/.test(cvv)
-}
-
-function validateExpiry(exp: string) {
-    return /^(0[1-9]|1[0-2])\/\d{2}$/.test(exp)
-}
+const API_URL = import.meta.env.VITE_API_URL;
+import type { CartItem } from '../services/cart'
+import { getCart, clearCart } from '../utils/cart'
 
 function Checkout() {
     const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto'>(
         'card'
     )
+
+    const [billingZip, setBillingZip] = useState('')
     const [billingName, setBillingName] = useState('')
     const [billingEmail, setBillingEmail] = useState('')
     const [cartItems, setCartItems] = useState<CartItem[]>([])
@@ -58,6 +29,10 @@ function Checkout() {
     const [expiry, setExpiry] = useState('')
     const [cvv, setCvv] = useState('')
     const [placingOrder, setPlacingOrder] = useState(false)
+
+    const [taxRate, setTaxRate] = useState<number | null>(null)
+    const [taxLoading, setTaxLoading] = useState(false)
+    const [taxError, setTaxError] = useState<string | null>(null)
 
     const navigate = useNavigate()
 
@@ -82,43 +57,75 @@ function Checkout() {
         }
     }, [user])
 
+    // for UI only, CheckoutRouter.ts validates prices from DB when checking out
     const subtotal = cartItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
     )
 
-    const tax = +(subtotal * 0.1).toFixed(2) // 10% just as an example
+    const effectiveTaxRate = taxRate ?? 0
+    const tax = +(subtotal * effectiveTaxRate).toFixed(2)
     const total = +(subtotal + tax).toFixed(2)
+
+    useEffect(() => {
+        if (!billingZip || subtotal <= 0) {
+            setTaxRate(null)
+            setTaxError(null)
+            setTaxLoading(false)
+            return
+        }
+
+        if (!/^\d{5}$/.test(billingZip)) {
+            setTaxRate(null)
+            setTaxError('Please enter a valid 5-digit ZIP code.')
+            setTaxLoading(false)
+            return
+        }
+
+        let cancelled = false
+
+        const fetchTax = async () => {
+            try {
+                setTaxLoading(true)
+                setTaxError(null)
+
+                const res = await axios.get(`${API_URL}/checkout/tax`, {
+                    params: { zip: billingZip },
+                })
+
+                if (cancelled) return
+
+                const rate = res.data?.rate
+                if (typeof rate === 'number' && rate >= 0 && rate < 1) {
+                    setTaxRate(rate)
+                } else {
+                    setTaxRate(null)
+                    setTaxError('Could not calculate tax for that ZIP.')
+                }
+            } catch (err) {
+                console.error('Tax quote failed:', err)
+                if (!cancelled) {
+                    setTaxRate(null)
+                    setTaxError('Could not calculate tax for that ZIP.')
+                }
+            } finally {
+                if (!cancelled) {
+                    setTaxLoading(false)
+                }
+            }
+        }
+
+        fetchTax()
+
+        return () => {
+            cancelled = true
+        }
+    }, [billingZip, subtotal])
 
     const handlePlaceOrder = async () => {
         if (!billingName) {
             alert('Please enter your full name.')
             return
-        }
-
-        if (!validateEmail(billingEmail)) {
-            alert('Please enter a valid email address.')
-            return
-        }
-
-        if (cartItems.length === 0) {
-            alert('Your cart is empty.')
-            return
-        }
-
-        if (paymentMethod === 'card') {
-            if (!validateCardNumber(cardNumber)) {
-                alert('Invalid card number.')
-                return
-            }
-            if (!validateExpiry(expiry)) {
-                alert('Invalid expiry format (MM/YY).')
-                return
-            }
-            if (!validateCVV(cvv)) {
-                alert('Invalid CVV.')
-                return
-            }
         }
 
         if (cartItems.length === 0) {
@@ -129,26 +136,55 @@ function Checkout() {
         try {
             setPlacingOrder(true)
 
+            if (paymentMethod === 'card') {
+                const [mm, yy] = expiry.split('/')
+                const expMonth = Number(mm)
+                const expYear = Number(`20${yy}`)
+
+                await axios.post(`${API_URL}/validate-card
+`, {
+                    nameOnCard: billingName,
+                    cardNumber,
+                    expMonth,
+                    expYear,
+                    cvv,
+                    billingPostalCode: billingZip,
+                })
+            }
+
             const payload = {
                 cartItems,
-                subtotal,
-                tax,
-                total,
                 paymentMethod,
                 billing_name: billingName,
                 billing_email: billingEmail,
+                billing_zip: billingZip,
             }
 
             const res = await axios.post(`${API_URL}/checkout`, payload)
 
             console.log('Order created:', res.data)
 
+            clearCart()
+
             localStorage.setItem('shopping_cart_v1', '[]')
             setCartItems([])
 
             alert('Order placed successfully!.')
             navigate(ROUTES.HOME)
+
         } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 422) {
+                const data = err.response.data as {
+                    valid?: boolean
+                    errors?: Array<{ field: string; message: string }>
+                }
+                const msg =
+                    data.errors?.map((e) => `${e.field}: ${e.message}`).join('\n') ||
+                    'Card validation failed.'
+                alert(msg)
+                return
+            }
+
             console.error('Checkout failed:', err)
             alert('Checkout failed.')
         } finally {
@@ -198,6 +234,14 @@ function Checkout() {
                         margin="normal"
                         value={billingEmail}
                         onChange={(e) => setBillingEmail(e.target.value)}
+                    />
+                    <TextField
+                        label="ZIP / Postal Code"
+                        placeholder="94111"
+                        fullWidth
+                        margin="normal"
+                        value={billingZip}
+                        onChange={(e) => setBillingZip(e.target.value)}
                     />
 
                     {paymentMethod === 'card' ? (
@@ -289,9 +333,27 @@ function Checkout() {
                             <Typography variant="body2" sx={{ mb: 0.5 }}>
                                 Subtotal: ${subtotal.toFixed(2)}
                             </Typography>
+
                             <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                Tax (10%): ${tax.toFixed(2)}
+                                {taxLoading
+                                    ? 'Tax: calculating from ZIP...'
+                                    : taxRate === null
+                                        ? 'Tax: will be calculated at checkout based on ZIP'
+                                        : `Tax (${(taxRate * 100).toFixed(
+                                            2
+                                        )}%): $${tax.toFixed(2)}`}
                             </Typography>
+
+                            {taxError && (
+                                <Typography
+                                    variant="caption"
+                                    color="error"
+                                    sx={{ display: 'block', mb: 0.5 }}
+                                >
+                                    {taxError}
+                                </Typography>
+                            )}
+
                             <Typography
                                 variant="subtitle1"
                                 fontWeight="bold"

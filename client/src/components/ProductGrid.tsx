@@ -13,6 +13,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCartPlus } from '@fortawesome/free-solid-svg-icons'
 import { type JSX, useState } from 'react'
+import { addToCart} from "../utils/cart.ts";
 
 interface Product {
     id: number
@@ -21,14 +22,6 @@ interface Product {
     price: number
     image_url?: string
     platform?: string
-}
-
-interface CartItem {
-    productId: number
-    title: string
-    price: number
-    quantity: number
-    image_url?: string
 }
 
 interface ProductGridProps {
@@ -63,33 +56,7 @@ function ProductGrid({ products }: ProductGridProps): JSX.Element {
         const product = products.find((p) => p.id === productId)
         if (!product) return
 
-        const raw = localStorage.getItem('shopping_cart_v1')
-        let cart: CartItem[]
-
-        try {
-            const parsed = raw ? JSON.parse(raw) : []
-            cart = Array.isArray(parsed) ? parsed : []
-        } catch {
-            cart = []
-        }
-
-        const existing = cart.find((item) => item.productId === product.id)
-
-        if (existing) {
-            existing.quantity += 1
-        } else {
-            cart.push({
-                productId: product.id,
-                title: product.title,
-                price: product.price,
-                quantity: 1,
-                image_url: product.image_url,
-            })
-        }
-
-        localStorage.setItem('shopping_cart_v1', JSON.stringify(cart))
-
-        console.log('Added to cart:', product.title)
+        addToCart(product)
         setSnackbarOpen(true)
     }
 
