@@ -162,7 +162,9 @@ function Header({
                                 <Button
                                     variant="contained"
                                     onClick={handleLoginClick}
-                                    startIcon={<FontAwesomeIcon icon={faUser} />}
+                                    startIcon={
+                                        <FontAwesomeIcon icon={faUser} />
+                                    }
                                     sx={{
                                         background: 'rgba(255, 255, 255, 0.2)',
                                         backdropFilter: 'blur(10px)',
@@ -171,7 +173,8 @@ function Header({
                                         fontWeight: 600,
                                         px: { xs: 1.5, md: 2.5 },
                                         '&:hover': {
-                                            background: 'rgba(255, 255, 255, 0.3)',
+                                            background:
+                                                'rgba(255, 255, 255, 0.3)',
                                             border: '1px solid rgba(255, 255, 255, 0.5)',
                                         },
                                         display: { xs: 'none', sm: 'flex' },

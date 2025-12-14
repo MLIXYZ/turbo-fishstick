@@ -160,7 +160,14 @@ function UserMenu() {
                 }}
             >
                 {/* User Info Header */}
-                <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+                <Box
+                    sx={{
+                        px: 2,
+                        py: 1.5,
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                    }}
+                >
                     <Typography variant="subtitle2" fontWeight={600}>
                         {user.first_name} {user.last_name}
                     </Typography>
@@ -217,7 +224,10 @@ function UserMenu() {
                     }}
                 >
                     <ListItemIcon>
-                        <FontAwesomeIcon icon={faRightFromBracket} color="inherit" />
+                        <FontAwesomeIcon
+                            icon={faRightFromBracket}
+                            color="inherit"
+                        />
                     </ListItemIcon>
                     <Typography variant="body2">Logout</Typography>
                 </MenuItem>

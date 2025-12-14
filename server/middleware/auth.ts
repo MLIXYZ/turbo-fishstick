@@ -49,7 +49,6 @@ export const authenticate = async (
     }
 }
 
-
 // iddleware to check if user is admin
 // Use after authenticate middleware
 
@@ -176,8 +175,8 @@ export const optionalAuth = async (
         }
 
         next()
+        // eslint next-line no-unused-vars
     } catch (error) {
-        // Silently fail and proceed without user info
         next()
     }
 }
