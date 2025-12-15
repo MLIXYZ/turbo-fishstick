@@ -149,34 +149,29 @@ export const optionalAuth = async (
     res: Response,
     next: NextFunction
 ): Promise<void> => {
-    try {
-        const authHeader = req.headers.authorization
+    const authHeader = req.headers.authorization
 
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            next()
-            return
-        }
-
-        const token = authHeader.substring(7)
-        const decoded = jwt.verify(token, JWT_SECRET) as {
-            id: number
-            email: string
-            role: 'customer' | 'admin'
-        }
-
-        const user = await User.findByPk(decoded.id)
-
-        if (user && user.is_active) {
-            req.user = {
-                id: user.id,
-                email: user.email,
-                role: user.role as 'customer' | 'admin',
-            }
-        }
-
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
         next()
-        // eslint next-line no-unused-vars
-    } catch (error) {
-        next()
+        return
     }
+
+    const token = authHeader.substring(7)
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+        id: number
+        email: string
+        role: 'customer' | 'admin'
+    }
+
+    const user = await User.findByPk(decoded.id)
+
+    if (user && user.is_active) {
+        req.user = {
+            id: user.id,
+            email: user.email,
+            role: user.role as 'customer' | 'admin',
+        }
+    }
+
+    next()
 }
