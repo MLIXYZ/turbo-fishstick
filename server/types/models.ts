@@ -66,7 +66,7 @@ export interface UserAttributes {
     avatar_url: string | null
     is_verified: boolean
     is_active: boolean
-    role: 'customer' | 'admin' | 'seller'
+    role: 'customer' | 'admin'
     balance: number
     last_login: Date | null
     created_at: Date

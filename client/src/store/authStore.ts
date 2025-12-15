@@ -11,7 +11,7 @@ export interface User {
     date_of_birth: string | null
     avatar_url: string | null
     role: 'customer' | 'admin'
-    balance: number
+    balance?: number
     is_verified: boolean
     is_active: boolean
     last_login?: string | null
