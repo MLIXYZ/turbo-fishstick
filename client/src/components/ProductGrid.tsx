@@ -8,9 +8,12 @@ import {
     Button,
     Box,
     Chip,
+    Snackbar,
 } from '@mui/material'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCartPlus } from '@fortawesome/free-solid-svg-icons'
+import { type JSX, useState } from 'react'
+import { addToCart } from '../utils/cart.ts'
 
 interface Product {
     id: number
@@ -37,6 +40,8 @@ const placeholderColors = [
 ]
 
 function ProductGrid({ products }: ProductGridProps): JSX.Element {
+    const [snackbarOpen, setSnackbarOpen] = useState(false)
+
     if (products.length === 0) {
         return (
             <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -48,131 +53,143 @@ function ProductGrid({ products }: ProductGridProps): JSX.Element {
     }
 
     const handleAddToCart = (productId: number) => {
-        // TODO: Implement add to cart functionality
-        // - Update cart state in global store/context
-        // - Show confirmation toast/snackbar
-        // - Update cart count in header
-        console.log('Add to cart:', productId)
+        const product = products.find((p) => p.id === productId)
+        if (!product) return
+
+        addToCart(product)
+        setSnackbarOpen(true)
     }
 
     return (
-        <Grid container spacing={3}>
-            {products.map((product, index) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
-                    <Card
-                        elevation={2}
-                        sx={{
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            transition: 'transform 0.2s, box-shadow 0.2s',
-                            '&:hover': {
-                                transform: 'translateY(-4px)',
-                                boxShadow: 4,
-                            },
-                        }}
+        <>
+            <Grid container spacing={3}>
+                {products.map((product, index) => (
+                    <Grid
+                        size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                        key={product.id}
                     >
-                        <Box
+                        <Card
+                            elevation={2}
                             sx={{
-                                height: 180,
-                                bgcolor: product.image_url
-                                    ? 'grey.200'
-                                    : placeholderColors[
-                                          index % placeholderColors.length
-                                      ],
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
-                        >
-                            {product.image_url ? (
-                                <CardMedia
-                                    component="img"
-                                    height="180"
-                                    image={product.image_url}
-                                    alt={product.title}
-                                />
-                            ) : (
-                                <Typography
-                                    variant="h2"
-                                    color="white"
-                                    sx={{ opacity: 0.5 }}
-                                >
-                                    🎮
-                                </Typography>
-                            )}
-                        </Box>
-
-                        <CardContent
-                            sx={{
-                                flexGrow: 1,
+                                height: '100%',
                                 display: 'flex',
                                 flexDirection: 'column',
+                                transition: 'transform 0.2s, box-shadow 0.2s',
+                                '&:hover': {
+                                    transform: 'translateY(-4px)',
+                                    boxShadow: 4,
+                                },
                             }}
                         >
-                            <Typography
-                                variant="h6"
-                                component="div"
-                                gutterBottom
-                                noWrap
-                            >
-                                {product.title}
-                            </Typography>
-
-                            {product.platform && (
-                                <Box sx={{ mb: 1 }}>
-                                    <Chip
-                                        label={product.platform}
-                                        size="small"
-                                        color="primary"
-                                        variant="outlined"
-                                    />
-                                </Box>
-                            )}
-
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
+                            <Box
                                 sx={{
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: 'vertical',
-                                    mb: 2,
+                                    height: 180,
+                                    bgcolor: product.image_url
+                                        ? 'grey.200'
+                                        : placeholderColors[
+                                              index % placeholderColors.length
+                                          ],
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
                                 }}
                             >
-                                {product.description}
-                            </Typography>
-
-                            <Box sx={{ mt: 'auto' }}>
-                                <Typography
-                                    variant="h5"
-                                    color="primary"
-                                    fontWeight="bold"
-                                >
-                                    ${product.price.toFixed(2)}
-                                </Typography>
+                                {product.image_url ? (
+                                    <CardMedia
+                                        component="img"
+                                        height="180"
+                                        image={product.image_url}
+                                        alt={product.title}
+                                    />
+                                ) : (
+                                    <Typography
+                                        variant="h2"
+                                        color="white"
+                                        sx={{ opacity: 0.5 }}
+                                    >
+                                        🎮
+                                    </Typography>
+                                )}
                             </Box>
-                        </CardContent>
 
-                        <CardActions>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                fullWidth
-                                startIcon={
-                                    <FontAwesomeIcon icon={faCartPlus} />
-                                }
-                                onClick={() => handleAddToCart(product.id)}
+                            <CardContent
+                                sx={{
+                                    flexGrow: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                }}
                             >
-                                Add to Cart
-                            </Button>
-                        </CardActions>
-                    </Card>
-                </Grid>
-            ))}
-        </Grid>
+                                <Typography
+                                    variant="h6"
+                                    component="div"
+                                    gutterBottom
+                                    noWrap
+                                >
+                                    {product.title}
+                                </Typography>
+
+                                {product.platform && (
+                                    <Box sx={{ mb: 1 }}>
+                                        <Chip
+                                            label={product.platform}
+                                            size="small"
+                                            color="primary"
+                                            variant="outlined"
+                                        />
+                                    </Box>
+                                )}
+
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    sx={{
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: 'vertical',
+                                        mb: 2,
+                                    }}
+                                >
+                                    {product.description}
+                                </Typography>
+
+                                <Box sx={{ mt: 'auto' }}>
+                                    <Typography
+                                        variant="h5"
+                                        color="primary"
+                                        fontWeight="bold"
+                                    >
+                                        ${product.price.toFixed(2)}
+                                    </Typography>
+                                </Box>
+                            </CardContent>
+
+                            <CardActions>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    fullWidth
+                                    startIcon={
+                                        <FontAwesomeIcon icon={faCartPlus} />
+                                    }
+                                    onClick={() => handleAddToCart(product.id)}
+                                >
+                                    Add to Cart
+                                </Button>
+                            </CardActions>
+                        </Card>
+                    </Grid>
+                ))}
+            </Grid>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={2000}
+                onClose={() => setSnackbarOpen(false)}
+                message="Added to cart"
+            />
+        </>
     )
 }
 

@@ -137,6 +137,7 @@ export type OrderCreationAttributes = Optional<
 export interface OrderInstance
     extends Model<OrderAttributes, OrderCreationAttributes>, OrderAttributes {
     user?: UserInstance
+    items?: OrderItemInstance[]
 }
 
 export interface TransactionAttributes {
@@ -201,4 +202,52 @@ export interface DiscountCodeLogInstance
         Model<DiscountCodeLogAttributes, DiscountCodeLogCreationAttributes>,
         DiscountCodeLogAttributes {
     creator?: UserInstance
+}
+
+export interface StockKeyAttributes {
+    id: number
+    product_id: number
+    game_key: string
+    status: 'available' | 'sold' | 'reserved'
+    order_id: number | null
+    order_number: string | null
+    created_at: Date
+    assigned_at: Date | null
+    notes: string | null
+}
+
+export type StockKeyCreationAttributes = Optional<
+    StockKeyAttributes,
+    'id' | 'order_id' | 'order_number' | 'created_at' | 'assigned_at' | 'notes'
+>
+
+export interface StockKeyInstance
+    extends
+        Model<StockKeyAttributes, StockKeyCreationAttributes>,
+        StockKeyAttributes {
+    product?: ProductInstance
+    order?: OrderInstance
+}
+
+export interface OrderItemAttributes {
+    id: number
+    order_id: number
+    product_id: number
+    quantity: number
+    price: number
+    subtotal: number
+    created_at: Date
+}
+
+export type OrderItemCreationAttributes = Optional<
+    OrderItemAttributes,
+    'id' | 'created_at'
+>
+
+export interface OrderItemInstance
+    extends
+        Model<OrderItemAttributes, OrderItemCreationAttributes>,
+        OrderItemAttributes {
+    product?: ProductInstance
+    order?: OrderInstance
 }

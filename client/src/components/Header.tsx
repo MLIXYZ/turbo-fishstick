@@ -21,25 +21,39 @@ import SearchBar from './SearchBar'
 import UserMenu from './UserMenu'
 import { useAuthStore } from '../store/authStore'
 import ROUTES from '../config/routes'
+import { type JSX, useEffect, useState } from 'react'
+import { getCart } from '../utils/cart'
 
 interface HeaderProps {
     onSearch: (query: string) => void
     onMenuClick?: () => void
-    cartItemCount?: number
 }
 
-function Header({
-    onSearch,
-    onMenuClick,
-    cartItemCount = 0,
-}: HeaderProps): JSX.Element {
+function Header({ onSearch, onMenuClick }: HeaderProps): JSX.Element {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('md'))
     const navigate = useNavigate()
     const { isAuthenticated } = useAuthStore()
 
+    const [cartCount, setCartCount] = useState(0)
+
+    useEffect(() => {
+        const updateCount = () => {
+            const cart = getCart()
+            const total = cart.reduce((sum, item) => sum + item.quantity, 0)
+            setCartCount(total)
+        }
+
+        updateCount()
+        window.addEventListener('cart-updated', updateCount)
+
+        return () => {
+            window.removeEventListener('cart-updated', updateCount)
+        }
+    }, [])
+
     const handleCartClick = () => {
-        // TODO: Implement cart modal/page navigation
+        navigate(ROUTES.CART)
         console.log('Cart clicked')
     }
 
@@ -136,11 +150,8 @@ function Header({
                         }}
                     >
                         <IconButton color="inherit" onClick={handleCartClick}>
-                            {cartItemCount > 0 ? (
-                                <Badge
-                                    badgeContent={cartItemCount}
-                                    color="error"
-                                >
+                            {cartCount > 0 ? (
+                                <Badge badgeContent={cartCount} color="error">
                                     <FontAwesomeIcon
                                         icon={faShoppingCart}
                                         size="lg"

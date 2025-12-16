@@ -3,8 +3,10 @@ import Category from './Category'
 import Product from './Product'
 import User from './User'
 import Order from './Order'
+import OrderItem from './OrderItem'
 import Transaction from './Transaction'
 import DiscountCodeLog from './DiscountCodeLog'
+import StockKey from './StockKey'
 
 // Product - Category relationship
 Product.belongsTo(Category, {
@@ -61,6 +63,50 @@ User.hasMany(DiscountCodeLog, {
     as: 'discount_codes',
 })
 
+// StockKey - Product relationship
+StockKey.belongsTo(Product, {
+    foreignKey: 'product_id',
+    as: 'product',
+})
+
+Product.hasMany(StockKey, {
+    foreignKey: 'product_id',
+    as: 'stock_keys',
+})
+
+// StockKey - Order relationship
+StockKey.belongsTo(Order, {
+    foreignKey: 'order_id',
+    as: 'order',
+})
+
+Order.hasMany(StockKey, {
+    foreignKey: 'order_id',
+    as: 'stock_keys',
+})
+
+// OrderItem - Order relationship
+OrderItem.belongsTo(Order, {
+    foreignKey: 'order_id',
+    as: 'order',
+})
+
+Order.hasMany(OrderItem, {
+    foreignKey: 'order_id',
+    as: 'items',
+})
+
+// OrderItem - Product relationship
+OrderItem.belongsTo(Product, {
+    foreignKey: 'product_id',
+    as: 'product',
+})
+
+Product.hasMany(OrderItem, {
+    foreignKey: 'product_id',
+    as: 'order_items',
+})
+
 export const syncDatabase = async (): Promise<void> => {
     try {
         if (process.env.NODE_ENV === 'development') {
@@ -79,6 +125,8 @@ export {
     Product,
     User,
     Order,
+    OrderItem,
     Transaction,
     DiscountCodeLog,
+    StockKey,
 }
