@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express'
+import { WhereOptions } from 'sequelize'
 import StockKey from '../models/StockKey'
 import { Product, Order, OrderItem } from '../models'
 import { authenticate, requireAdmin } from '../middleware/auth'
@@ -14,7 +15,7 @@ router.get(
         try {
             const { product_id, status, page = '1', limit = '50' } = req.query
 
-            const where: any = {}
+            const where: WhereOptions = {}
             if (product_id) where.product_id = Number(product_id)
             if (status) where.status = String(status)
 
@@ -67,7 +68,7 @@ router.get(
         try {
             const { product_id } = req.query
 
-            const where: any = { status: 'available' }
+            const where: WhereOptions = { status: 'available' }
             if (product_id) where.product_id = Number(product_id)
 
             const count = await StockKey.count({ where })
@@ -256,7 +257,10 @@ router.put(
                 return
             }
 
-            const orderInstance = order as any // Type assertion for items relationship
+            interface OrderWithItems extends Order {
+                items?: Array<{ product_id: number }>
+            }
+            const orderInstance = order as OrderWithItems
             const orderItems = orderInstance.items || []
             const orderProductIds = orderItems.map(
                 (item: { product_id: number }) => item.product_id
@@ -270,7 +274,10 @@ router.put(
             }
 
             if (!orderProductIds.includes(stockKey.product_id)) {
-                const stockKeyWithProduct = stockKey as any
+                interface StockKeyWithProduct extends StockKey {
+                    product?: { title: string }
+                }
+                const stockKeyWithProduct = stockKey as StockKeyWithProduct
                 const productTitle =
                     stockKeyWithProduct.product?.title ||
                     `Product #${stockKey.product_id}`

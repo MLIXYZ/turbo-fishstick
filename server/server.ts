@@ -1,4 +1,4 @@
-/// <reference path="./types/express.d.ts" />
+import './types/express.d.ts'
 import express, { Request, Response } from 'express'
 import path from 'path'
 import cors from 'cors'
