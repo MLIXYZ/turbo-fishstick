@@ -13,7 +13,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCartPlus } from '@fortawesome/free-solid-svg-icons'
 import { type JSX, useState } from 'react'
-import { addToCart} from "../utils/cart.ts";
+import { addToCart } from '../utils/cart.ts'
 
 interface Product {
     id: number

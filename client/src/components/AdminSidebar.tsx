@@ -14,6 +14,7 @@ import {
     faTruck,
     faUser,
     faTicket,
+    faKey,
 } from '@fortawesome/free-solid-svg-icons'
 
 export default function AdminSidebar(): JSX.Element {
@@ -60,6 +61,27 @@ export default function AdminSidebar(): JSX.Element {
                         >
                             <FontAwesomeIcon icon={faBoxesStacked} />
                             <ListItemText primary="Products" sx={{ px: 1 }} />
+                        </ListItemButton>
+                    </ListItem>
+
+                    <ListItem disablePadding sx={{ mb: 0.5 }}>
+                        <ListItemButton
+                            selected={
+                                location.pathname === ROUTES.ADMIN_INVENTORY
+                            }
+                            onClick={() => {
+                                navigate(ROUTES.ADMIN_INVENTORY)
+                            }}
+                            sx={{
+                                borderRadius: 1,
+                                '&.Mui-selected': {
+                                    borderLeft: 4,
+                                    borderLeftColor: 'primary.main',
+                                },
+                            }}
+                        >
+                            <FontAwesomeIcon icon={faKey} />
+                            <ListItemText primary="Stock Keys" sx={{ px: 1 }} />
                         </ListItemButton>
                     </ListItem>
 

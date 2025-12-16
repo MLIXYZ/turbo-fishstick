@@ -1,3 +1,4 @@
+/// <reference path="./types/express.d.ts" />
 import express, { Request, Response } from 'express'
 import path from 'path'
 import cors from 'cors'
@@ -22,6 +23,7 @@ import {
 } from './middleware/auth'
 import cardValidationRoutes from './routes/CardValidationRouter'
 import checkoutRoutes from './routes/CheckoutRouter'
+import stockKeysRoutes from './routes/StockKeysRouter'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -40,6 +42,9 @@ app.use('/api/validate-card', cardValidationRoutes)
 
 // Checkout
 app.use('/api/checkout', checkoutRoutes)
+
+// Stock Keys Management
+app.use('/api/admin/stock-keys', stockKeysRoutes)
 
 app.get(
     '/api/categories',

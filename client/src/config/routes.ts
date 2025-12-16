@@ -11,22 +11,19 @@ export const ROUTES = {
     // Category routes
     CATEGORY: (id: string | number) => `/category/${id}`,
 
-    // TODO
     PROFILE: '/profile',
     ORDERS: '/orders',
     ORDER_DETAIL: (id: string | number) => `/orders/${id}`,
 
-    //  TODO
     CART: '/cart',
     CHECKOUT: '/checkout',
-    VALIDATE: '/checkout/validate-card',
 
-    // TODO
     ADMIN: '/admin',
     ADMIN_PRODUCTS: '/admin/products',
     ADMIN_ORDERS: '/admin/orders',
     ADMIN_USERS: '/admin/users',
     ADMIN_DISCOUNT_CODES: '/admin/discount-codes',
+    ADMIN_INVENTORY: '/admin/inventory',
 } as const
 
 export default ROUTES

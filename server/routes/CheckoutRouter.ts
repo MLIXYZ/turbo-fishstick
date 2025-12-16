@@ -1,7 +1,14 @@
 import express, { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
-import { sequelize, Product, Order, Transaction, User } from '../models'
+import {
+    sequelize,
+    Product,
+    Order,
+    Transaction,
+    User,
+    DiscountCodeLog,
+} from '../models'
 import { getTaxRateForZip } from '../utils/tax'
 
 const router = express.Router()
@@ -21,6 +28,7 @@ interface CheckoutBody {
     billing_name: string
     billing_email: string
     billing_zip: string
+    discount_code?: string
 }
 
 async function getAuthenticatedUserId(req: Request): Promise<number | null> {
@@ -92,6 +100,51 @@ router.get('/tax', async (req: Request, res: Response): Promise<void> => {
     }
 })
 
+router.get(
+    '/validate-discount',
+    async (req: Request, res: Response): Promise<void> => {
+        const code = (req.query.code as string | undefined)
+            ?.trim()
+            .toUpperCase()
+
+        if (!code) {
+            res.status(400).json({ error: 'Discount code is required' })
+            return
+        }
+
+        try {
+            const discountCode = await DiscountCodeLog.findOne({
+                where: { code },
+            })
+
+            if (!discountCode) {
+                res.status(404).json({
+                    valid: false,
+                    error: 'Discount code not found',
+                })
+                return
+            }
+
+            if (discountCode.status !== 'active') {
+                res.status(400).json({
+                    valid: false,
+                    error: `This discount code is ${discountCode.status}`,
+                })
+                return
+            }
+
+            res.json({
+                valid: true,
+                code: discountCode.code,
+                percent_off: discountCode.percent_off,
+            })
+        } catch (err) {
+            console.error('Discount validation error:', err)
+            res.status(500).json({ error: 'Failed to validate discount code' })
+        }
+    }
+)
+
 router.post('/', async (req: Request, res: Response): Promise<void> => {
     const {
         cartItems,
@@ -99,6 +152,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
         billing_name,
         billing_email,
         billing_zip,
+        discount_code,
     } = req.body as CheckoutBody
 
     try {
@@ -152,16 +206,48 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
             subtotal += price * requestedQty
         }
 
+        // Validate and apply discount code if provided
+        let discount = 0
+        let discountCodeRecord = null
+        if (discount_code && discount_code.trim()) {
+            const code = discount_code.trim().toUpperCase()
+            discountCodeRecord = await DiscountCodeLog.findOne({
+                where: { code },
+            })
+
+            if (!discountCodeRecord) {
+                res.status(400).json({
+                    error: `Discount code '${code}' not found.`,
+                })
+                return
+            }
+
+            if (discountCodeRecord.status !== 'active') {
+                res.status(400).json({
+                    error: `Discount code '${code}' is ${discountCodeRecord.status}.`,
+                })
+                return
+            }
+
+            // Calculate discount
+            const percentOff = Number(discountCodeRecord.percent_off)
+            discount = +(subtotal * (percentOff / 100)).toFixed(2)
+        }
+
         const taxRate = await getTaxRateForZip(billing_zip)
-        const tax = +(subtotal * taxRate).toFixed(2)
-        const total = +(subtotal + tax).toFixed(2)
+        const afterDiscount = subtotal - discount
+        const tax = +(afterDiscount * taxRate).toFixed(2)
+        const total = +(afterDiscount + tax).toFixed(2)
 
         const authUserId = await getAuthenticatedUserId(req)
         const userId =
-            authUserId ?? (await getOrCreateGuestUser(billing_name, billing_email))
+            authUserId ??
+            (await getOrCreateGuestUser(billing_name, billing_email))
 
         const result = await sequelize.transaction(async (t) => {
-            const orderNumber = `GK-${Date.now()}-${Math.floor(Math.random() * 1000)
+            const orderNumber = `GK-${Date.now()}-${Math.floor(
+                Math.random() * 1000
+            )
                 .toString()
                 .padStart(3, '0')}`
 
@@ -172,8 +258,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
                     status: 'completed',
                     subtotal,
                     tax,
-                    discount: 0,
-                    discount_code: null,
+                    discount,
+                    discount_code: discountCodeRecord?.code || null,
                     total,
                     payment_method: paymentMethod,
                     payment_status: 'paid',
@@ -200,10 +286,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
                     )
                 }
 
-                await product.update(
-                    { stock: newStock },
-                    { transaction: t }
-                )
+                await product.update({ stock: newStock }, { transaction: t })
             }
 
             // Record transaction
@@ -229,6 +312,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
                     metadata: {
                         cartItems,
                         subtotal,
+                        discount,
+                        discount_code: discountCodeRecord?.code || null,
                         tax,
                         total,
                     },
@@ -245,6 +330,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
             transaction: result.transaction,
             totals: {
                 subtotal,
+                discount,
                 tax,
                 total,
             },

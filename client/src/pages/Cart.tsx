@@ -43,7 +43,9 @@ function Cart() {
             setStockLoading(true)
 
             // Get unique product IDs in case there are duplicates
-            const productIds = [...new Set(cartItems.map((item) => item.productId))]
+            const productIds = [
+                ...new Set(cartItems.map((item) => item.productId)),
+            ]
 
             try {
                 // Fire all requests in parallel
@@ -58,8 +60,7 @@ function Cart() {
                 responses.forEach((res, index) => {
                     const id = productIds[index]
                     const stock = res.data?.stock
-                    nextStockMap[id] =
-                        typeof stock === 'number' ? stock : null
+                    nextStockMap[id] = typeof stock === 'number' ? stock : null
                 })
 
                 setStockMap(nextStockMap)
@@ -150,7 +151,6 @@ function Cart() {
                                     width: '100%',
                                 }}
                             >
-
                                 {item.image_url && (
                                     <Box
                                         component="img"
@@ -175,8 +175,11 @@ function Cart() {
                                         flexShrink: 0,
                                         minWidth: { xs: '100%', sm: 90 },
                                         width: { xs: '100%', sm: 'auto' },
-                                        justifyContent: { xs: 'flex-start', sm: 'flex-start' },
-                                        order: { xs: 3, sm: 1 },       // 👈 bottom on mobile, left on desktop
+                                        justifyContent: {
+                                            xs: 'flex-start',
+                                            sm: 'flex-start',
+                                        },
+                                        order: { xs: 3, sm: 1 }, // 👈 bottom on mobile, left on desktop
                                     }}
                                 >
                                     <IconButton

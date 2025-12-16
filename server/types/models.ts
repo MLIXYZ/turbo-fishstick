@@ -202,3 +202,28 @@ export interface DiscountCodeLogInstance
         DiscountCodeLogAttributes {
     creator?: UserInstance
 }
+
+export interface StockKeyAttributes {
+    id: number
+    product_id: number
+    game_key: string
+    status: 'available' | 'sold' | 'reserved'
+    order_id: number | null
+    order_number: string | null
+    created_at: Date
+    assigned_at: Date | null
+    notes: string | null
+}
+
+export type StockKeyCreationAttributes = Optional<
+    StockKeyAttributes,
+    'id' | 'order_id' | 'order_number' | 'created_at' | 'assigned_at' | 'notes'
+>
+
+export interface StockKeyInstance
+    extends
+        Model<StockKeyAttributes, StockKeyCreationAttributes>,
+        StockKeyAttributes {
+    product?: ProductInstance
+    order?: OrderInstance
+}

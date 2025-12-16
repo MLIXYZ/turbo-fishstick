@@ -25,7 +25,7 @@ export async function getTaxRateForZip(zip: string): Promise<number> {
             {
                 params: {
                     key: ZIP_TAX_API_KEY,
-                    postalcode: zip,      // <– by postal code
+                    postalcode: zip, // <– by postal code
                     format: 'json',
                     countryCode: 'USA',
                 },
@@ -35,13 +35,18 @@ export async function getTaxRateForZip(zip: string): Promise<number> {
         const data = res.data
 
         // Basic success check
-        if (data.rCode !== 100 || !Array.isArray(data.results) || data.results.length === 0) {
+        if (
+            data.rCode !== 100 ||
+            !Array.isArray(data.results) ||
+            data.results.length === 0
+        ) {
             console.warn('Zip-Tax: no valid results, using default rate', data)
             return DEFAULT_TAX_RATE
         }
 
         const first = data.results[0]
-        const taxSales = typeof first.taxSales === 'number' ? first.taxSales : NaN
+        const taxSales =
+            typeof first.taxSales === 'number' ? first.taxSales : NaN
         const taxUse = typeof first.taxUse === 'number' ? first.taxUse : NaN
 
         // Prefer taxSales, fall back to taxUse
@@ -60,7 +65,10 @@ export async function getTaxRateForZip(zip: string): Promise<number> {
         })
         return DEFAULT_TAX_RATE
     } catch (err) {
-        console.error('Error fetching tax rate from Zip-Tax, using default', err)
+        console.error(
+            'Error fetching tax rate from Zip-Tax, using default',
+            err
+        )
         return DEFAULT_TAX_RATE
     }
 }

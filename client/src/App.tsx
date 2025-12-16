@@ -12,6 +12,7 @@ import AdminProducts from './pages/AdminProducts'
 import AdminOrders from './pages/AdminOrders'
 import AdminUsers from './pages/AdminUsers'
 import AdminDiscountCodes from './pages/AdminDiscountCodes'
+import AdminInventory from './pages/AdminInventory'
 import Cart from './pages/Cart.tsx'
 import Checkout from './pages/Checkout.tsx'
 
@@ -105,6 +106,50 @@ function App() {
                 <Route
                     path={ROUTES.ADMIN_DISCOUNT_CODES}
                     element={<AdminDiscountCodes />}
+                />
+                <Route
+                    path={ROUTES.ADMIN_INVENTORY}
+                    element={<AdminInventory />}
+                />
+                <Route
+                    path={ROUTES.CART}
+                    element={
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                minHeight: '100vh',
+                                bgcolor: 'grey.100',
+                            }}
+                        >
+                            <Header
+                                onSearch={handleSearch}
+                                onMenuClick={handleMenuClick}
+                                cartItemCount={cartItemCount}
+                            />
+                            <Cart />
+                        </Box>
+                    }
+                />
+                <Route
+                    path={ROUTES.CHECKOUT}
+                    element={
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                minHeight: '100vh',
+                                bgcolor: 'grey.100',
+                            }}
+                        >
+                            <Header
+                                onSearch={handleSearch}
+                                onMenuClick={handleMenuClick}
+                                cartItemCount={cartItemCount}
+                            />
+                            <Checkout />
+                        </Box>
+                    }
                 />
             </Routes>
         </Router>

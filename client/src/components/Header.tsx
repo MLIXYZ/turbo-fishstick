@@ -21,7 +21,7 @@ import SearchBar from './SearchBar'
 import UserMenu from './UserMenu'
 import { useAuthStore } from '../store/authStore'
 import ROUTES from '../config/routes'
-import {type JSX, useEffect, useState} from 'react'
+import { type JSX, useEffect, useState } from 'react'
 import { getCart } from '../utils/cart'
 
 interface HeaderProps {
@@ -30,10 +30,7 @@ interface HeaderProps {
     cartItemCount?: number
 }
 
-function Header({
-    onSearch,
-    onMenuClick,
-}: HeaderProps): JSX.Element {
+function Header({ onSearch, onMenuClick }: HeaderProps): JSX.Element {
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('md'))
     const navigate = useNavigate()
@@ -44,10 +41,7 @@ function Header({
     useEffect(() => {
         const updateCount = () => {
             const cart = getCart()
-            const total = cart.reduce(
-                (sum, item) => sum + item.quantity,
-                0
-            )
+            const total = cart.reduce((sum, item) => sum + item.quantity, 0)
             setCartCount(total)
         }
 
@@ -158,10 +152,7 @@ function Header({
                     >
                         <IconButton color="inherit" onClick={handleCartClick}>
                             {cartCount > 0 ? (
-                                <Badge
-                                    badgeContent={cartCount}
-                                    color="error"
-                                >
+                                <Badge badgeContent={cartCount} color="error">
                                     <FontAwesomeIcon
                                         icon={faShoppingCart}
                                         size="lg"
