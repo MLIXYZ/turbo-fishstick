@@ -18,6 +18,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from 'react-router-dom'
 import SearchBar from './SearchBar'
+import UserMenu from './UserMenu'
+import { useAuthStore } from '../store/authStore'
 import ROUTES from '../config/routes'
 import {type JSX, useEffect, useState} from 'react'
 import { getCart } from '../utils/cart'
@@ -35,6 +37,7 @@ function Header({
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('md'))
     const navigate = useNavigate()
+    const { isAuthenticated } = useAuthStore()
 
     const [cartCount, setCartCount] = useState(0)
 
@@ -63,6 +66,10 @@ function Header({
 
     const handleLoginClick = () => {
         navigate(ROUTES.LOGIN)
+    }
+
+    const handleLogoClick = () => {
+        navigate(ROUTES.HOME)
     }
 
     return (
@@ -96,16 +103,29 @@ function Header({
                                 <MenuIcon />
                             </IconButton>
                         )}
-                        <FontAwesomeIcon icon={faGamepad} size="lg" />
-                        <Typography
-                            variant="h6"
-                            component="div"
-                            fontWeight="bold"
-                            sx={{ display: { xs: 'none', sm: 'block' } }}
-                            noWrap
+                        <Box
+                            onClick={handleLogoClick}
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                                cursor: 'pointer',
+                                '&:hover': {
+                                    opacity: 0.8,
+                                },
+                            }}
                         >
-                            Game Store
-                        </Typography>
+                            <FontAwesomeIcon icon={faGamepad} size="lg" />
+                            <Typography
+                                variant="h6"
+                                component="div"
+                                fontWeight="bold"
+                                sx={{ display: { xs: 'none', sm: 'block' } }}
+                                noWrap
+                            >
+                                Game Store
+                            </Typography>
+                        </Box>
                     </Box>
 
                     <Box
@@ -155,34 +175,44 @@ function Header({
                             )}
                         </IconButton>
 
-                        <Button
-                            variant="contained"
-                            onClick={handleLoginClick}
-                            startIcon={<FontAwesomeIcon icon={faUser} />}
-                            sx={{
-                                background: 'rgba(255, 255, 255, 0.2)',
-                                backdropFilter: 'blur(10px)',
-                                border: '1px solid rgba(255, 255, 255, 0.3)',
-                                color: 'white',
-                                fontWeight: 600,
-                                px: { xs: 1.5, md: 2.5 },
-                                '&:hover': {
-                                    background: 'rgba(255, 255, 255, 0.3)',
-                                    border: '1px solid rgba(255, 255, 255, 0.5)',
-                                },
-                                display: { xs: 'none', sm: 'flex' },
-                            }}
-                        >
-                            Login
-                        </Button>
+                        {/* Conditionally render UserMenu or Login Button */}
+                        {isAuthenticated ? (
+                            <UserMenu />
+                        ) : (
+                            <>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleLoginClick}
+                                    startIcon={
+                                        <FontAwesomeIcon icon={faUser} />
+                                    }
+                                    sx={{
+                                        background: 'rgba(255, 255, 255, 0.2)',
+                                        backdropFilter: 'blur(10px)',
+                                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                                        color: 'white',
+                                        fontWeight: 600,
+                                        px: { xs: 1.5, md: 2.5 },
+                                        '&:hover': {
+                                            background:
+                                                'rgba(255, 255, 255, 0.3)',
+                                            border: '1px solid rgba(255, 255, 255, 0.5)',
+                                        },
+                                        display: { xs: 'none', sm: 'flex' },
+                                    }}
+                                >
+                                    Login
+                                </Button>
 
-                        <IconButton
-                            color="inherit"
-                            onClick={handleLoginClick}
-                            sx={{ display: { xs: 'flex', sm: 'none' } }}
-                        >
-                            <FontAwesomeIcon icon={faUser} />
-                        </IconButton>
+                                <IconButton
+                                    color="inherit"
+                                    onClick={handleLoginClick}
+                                    sx={{ display: { xs: 'flex', sm: 'none' } }}
+                                >
+                                    <FontAwesomeIcon icon={faUser} />
+                                </IconButton>
+                            </>
+                        )}
                     </Box>
                 </Box>
             </Toolbar>

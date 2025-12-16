@@ -6,6 +6,12 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import ROUTES from './config/routes'
+import Profile from './pages/profile'
+import Admin from './pages/admin'
+import AdminProducts from './pages/AdminProducts'
+import AdminOrders from './pages/AdminOrders'
+import AdminUsers from './pages/AdminUsers'
+import AdminDiscountCodes from './pages/AdminDiscountCodes'
 import Cart from './pages/Cart.tsx'
 import Checkout from './pages/Checkout.tsx'
 
@@ -86,119 +92,20 @@ function App() {
                         </Box>
                     }
                 />
-
-                <Route
-                    path={ROUTES.CART}
-                    element={
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                minHeight: '100vh',
-                                bgcolor: 'grey.100',
-                            }}
-                        >
-                            <Header
-                                onSearch={handleSearch}
-                                onMenuClick={handleMenuClick}
-                                cartItemCount={cartItemCount}
-                            />
-
-                            <Cart />
-
-                            <Box
-                                component="footer"
-                                sx={{
-                                    bgcolor: 'grey.900',
-                                    color: 'white',
-                                    py: { xs: 3, md: 4 },
-                                    borderTop: 1,
-                                    borderColor: 'divider',
-                                    marginLeft: { xs: 0, md: '0px' },
-                                }}
-                            >
-                                <Container maxWidth="xl">
-                                    <Box sx={{ textAlign: 'center' }}>
-                                        <Typography
-                                            variant="h6"
-                                            fontWeight={600}
-                                            gutterBottom
-                                        >
-                                            🎮 Game Key Store
-                                        </Typography>
-                                        <Typography
-                                            variant="body2"
-                                            color="grey.400"
-                                        >
-                                            &copy; 2025 Game Key Store - Group
-                                            5. All rights reserved.
-                                        </Typography>
-                                    </Box>
-                                </Container>
-                            </Box>
-                        </Box>
-                    }
-                />
-
-                <Route
-                    path={ROUTES.CHECKOUT}
-                    element={
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                minHeight: '100vh',
-                                bgcolor: 'grey.100',
-                            }}
-                        >
-                            <Header
-                                onSearch={handleSearch}
-                                onMenuClick={handleMenuClick}
-                                cartItemCount={cartItemCount}
-                            />
-
-                            <Checkout
-                                searchQuery={searchQuery}
-                                mobileDrawerOpen={mobileDrawerOpen}
-                                onDrawerClose={handleDrawerClose}
-                            />
-
-                            <Box
-                                component="footer"
-                                sx={{
-                                    bgcolor: 'grey.900',
-                                    color: 'white',
-                                    py: { xs: 3, md: 4 },
-                                    borderTop: 1,
-                                    borderColor: 'divider',
-                                    marginLeft: { xs: 0, md: '0px' },
-                                }}
-                            >
-                                <Container maxWidth="xl">
-                                    <Box sx={{ textAlign: 'center' }}>
-                                        <Typography
-                                            variant="h6"
-                                            fontWeight={600}
-                                            gutterBottom
-                                        >
-                                            🎮 Game Key Store
-                                        </Typography>
-                                        <Typography
-                                            variant="body2"
-                                            color="grey.400"
-                                        >
-                                            &copy; 2025 Game Key Store - Group
-                                            5. All rights reserved.
-                                        </Typography>
-                                    </Box>
-                                </Container>
-                            </Box>
-                        </Box>
-                    }
-                />
-
                 <Route path={ROUTES.LOGIN} element={<Login />} />
                 <Route path={ROUTES.SIGNUP} element={<SignUp />} />
+                <Route path={ROUTES.PROFILE} element={<Profile />} />
+                <Route path={ROUTES.ADMIN} element={<Admin />} />
+                <Route
+                    path={ROUTES.ADMIN_PRODUCTS}
+                    element={<AdminProducts />}
+                />
+                <Route path={ROUTES.ADMIN_ORDERS} element={<AdminOrders />} />
+                <Route path={ROUTES.ADMIN_USERS} element={<AdminUsers />} />
+                <Route
+                    path={ROUTES.ADMIN_DISCOUNT_CODES}
+                    element={<AdminDiscountCodes />}
+                />
             </Routes>
         </Router>
     )

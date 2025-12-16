@@ -66,7 +66,7 @@ export interface UserAttributes {
     avatar_url: string | null
     is_verified: boolean
     is_active: boolean
-    role: 'customer' | 'admin' | 'seller'
+    role: 'customer' | 'admin'
     balance: number
     last_login: Date | null
     created_at: Date
@@ -105,6 +105,8 @@ export interface OrderAttributes {
     payment_status: 'pending' | 'paid' | 'refunded' | 'failed'
     billing_email: string
     billing_name: string
+    shipping_address: string | null
+    tracking_number: string | null
     ip_address: string | null
     user_agent: string | null
     notes: string | null
@@ -122,6 +124,8 @@ export type OrderCreationAttributes = Optional<
     | 'discount_code'
     | 'payment_method'
     | 'payment_status'
+    | 'shipping_address'
+    | 'tracking_number'
     | 'ip_address'
     | 'user_agent'
     | 'notes'
