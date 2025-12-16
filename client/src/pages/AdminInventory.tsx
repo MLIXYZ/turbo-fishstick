@@ -158,8 +158,12 @@ function AdminInventory() {
             setAddDialogOpen(false)
             setNewKey({ product_id: '', game_key: '', notes: '' })
             fetchKeys()
-        } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to add stock key')
+        } catch (err: unknown) {
+            setError(
+                axios.isAxiosError(err) && err.response?.data?.error
+                    ? err.response.data.error
+                    : 'Failed to add stock key'
+            )
         }
     }
 
@@ -173,8 +177,12 @@ function AdminInventory() {
             })
             setSuccess('Stock key deleted successfully')
             fetchKeys()
-        } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to delete stock key')
+        } catch (err: unknown) {
+            setError(
+                axios.isAxiosError(err) && err.response?.data?.error
+                    ? err.response.data.error
+                    : 'Failed to delete stock key'
+            )
         }
     }
 
@@ -195,8 +203,12 @@ function AdminInventory() {
             setAssignData({ order_number: '' })
             setSelectedKey(null)
             fetchKeys()
-        } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to assign stock key')
+        } catch (err: unknown) {
+            setError(
+                axios.isAxiosError(err) && err.response?.data?.error
+                    ? err.response.data.error
+                    : 'Failed to assign stock key'
+            )
         }
     }
 

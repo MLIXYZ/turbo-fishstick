@@ -671,7 +671,7 @@ function Checkout() {
                                         onClose={handleRemoveDiscount}
                                         sx={{ mt: 1 }}
                                     >
-                                        Code "{discountCode}" applied (
+                                        Code &quot;{discountCode}&quot; applied (
                                         {discountPercent}% off)
                                     </Alert>
                                 )}
