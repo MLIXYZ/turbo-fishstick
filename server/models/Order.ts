@@ -36,7 +36,7 @@ const Order = sequelize.define<OrderInstance>(
             allowNull: false,
             get(): number {
                 const value = this.getDataValue('subtotal')
-                return value ? parseFloat(value as string) : 0
+                return value ? parseFloat(value as unknown as string) : 0
             },
         },
         tax: {
@@ -44,7 +44,7 @@ const Order = sequelize.define<OrderInstance>(
             defaultValue: 0.0,
             get(): number {
                 const value = this.getDataValue('tax')
-                return value ? parseFloat(value as string) : 0
+                return value ? parseFloat(value as unknown as string) : 0
             },
         },
         discount: {
@@ -52,7 +52,7 @@ const Order = sequelize.define<OrderInstance>(
             defaultValue: 0.0,
             get(): number {
                 const value = this.getDataValue('discount')
-                return value ? parseFloat(value as string) : 0
+                return value ? parseFloat(value as unknown as string) : 0
             },
         },
         discount_code: {
@@ -64,7 +64,7 @@ const Order = sequelize.define<OrderInstance>(
             allowNull: false,
             get(): number {
                 const value = this.getDataValue('total')
-                return value ? parseFloat(value as string) : 0
+                return value ? parseFloat(value as unknown as string) : 0
             },
         },
         payment_method: {
@@ -82,6 +82,14 @@ const Order = sequelize.define<OrderInstance>(
         billing_name: {
             type: DataTypes.STRING(255),
             allowNull: false,
+        },
+        shipping_address: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+        },
+        tracking_number: {
+            type: DataTypes.STRING(100),
+            allowNull: true,
         },
         ip_address: {
             type: DataTypes.STRING(45),

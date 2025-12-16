@@ -11,7 +11,8 @@
         "build:client": "cd client && npm run build",
         "build:server": "cd server && npm run build",
         "build": "npm run build:server && npm run build:client",
-        "start": "cd server && npm start"
+        "start": "cd server && npm start",
+        "test": "cd server && vite test && cd ../client && vite test"
     },
     "keywords": [
         "express",

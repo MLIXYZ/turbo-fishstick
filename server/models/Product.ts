@@ -27,7 +27,7 @@ const Product = sequelize.define<ProductInstance>(
             allowNull: false,
             get(): number {
                 const value = this.getDataValue('price')
-                return value ? parseFloat(value as string) : 0
+                return value ? parseFloat(value as unknown as string) : 0
             },
         },
         category_id: {

@@ -44,7 +44,7 @@ const Transaction = sequelize.define<TransactionInstance>(
             allowNull: false,
             get(): number {
                 const value = this.getDataValue('amount')
-                return value ? parseFloat(value as string) : 0
+                return value ? parseFloat(value as unknown as string) : 0
             },
         },
         currency: {
