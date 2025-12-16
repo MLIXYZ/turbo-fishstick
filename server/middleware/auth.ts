@@ -146,7 +146,7 @@ export const requireOwnerOrAdmin = (userIdField: string = 'userId') => {
  */
 export const optionalAuth = async (
     req: Request,
-    res: Response,
+    _res: Response,
     next: NextFunction
 ): Promise<void> => {
     const authHeader = req.headers.authorization
@@ -156,21 +156,26 @@ export const optionalAuth = async (
         return
     }
 
-    const token = authHeader.substring(7)
-    const decoded = jwt.verify(token, JWT_SECRET) as {
-        id: number
-        email: string
-        role: 'customer' | 'admin'
-    }
-
-    const user = await User.findByPk(decoded.id)
-
-    if (user && user.is_active) {
-        req.user = {
-            id: user.id,
-            email: user.email,
-            role: user.role as 'customer' | 'admin',
+    try {
+        const token = authHeader.substring(7)
+        const decoded = jwt.verify(token, JWT_SECRET) as {
+            id: number
+            email: string
+            role: 'customer' | 'admin'
         }
+
+        const user = await User.findByPk(decoded.id)
+
+        if (user && user.is_active) {
+            req.user = {
+                id: user.id,
+                email: user.email,
+                role: user.role as 'customer' | 'admin',
+            }
+        }
+    } catch (error) {
+        // Ignore errors in optional auth - just continue without user
+        console.log('Optional auth failed:', error)
     }
 
     next()

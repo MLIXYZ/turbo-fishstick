@@ -177,20 +177,24 @@ function UserMenu() {
                 </Box>
 
                 {/* Profile */}
-                <MenuItem onClick={() => handleMenuItemClick()}>
+                <MenuItem onClick={() => handleMenuItemClick(ROUTES.PROFILE)}>
                     <ListItemIcon>
                         <FontAwesomeIcon icon={faUser} />
                     </ListItemIcon>
                     <Typography variant="body2">Profile</Typography>
                 </MenuItem>
 
-                {/* Orders */}
-                <MenuItem onClick={() => handleMenuItemClick()}>
-                    <ListItemIcon>
-                        <FontAwesomeIcon icon={faShoppingBag} />
-                    </ListItemIcon>
-                    <Typography variant="body2">My Orders</Typography>
-                </MenuItem>
+                {/* Orders - Only show for non-admin users */}
+                {user.role !== 'admin' && (
+                    <MenuItem
+                        onClick={() => handleMenuItemClick(ROUTES.ORDERS)}
+                    >
+                        <ListItemIcon>
+                            <FontAwesomeIcon icon={faShoppingBag} />
+                        </ListItemIcon>
+                        <Typography variant="body2">My Orders</Typography>
+                    </MenuItem>
+                )}
 
                 <Divider />
 
@@ -204,7 +208,7 @@ function UserMenu() {
 
                 {/* Admin Panel (only for admins) */}
                 {user.role === 'admin' && (
-                    <MenuItem onClick={() => handleMenuItemClick()}>
+                    <MenuItem onClick={() => handleMenuItemClick(ROUTES.ADMIN)}>
                         <ListItemIcon>
                             <FontAwesomeIcon icon={faShield} />
                         </ListItemIcon>
