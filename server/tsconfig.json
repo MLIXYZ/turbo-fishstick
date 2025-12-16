@@ -24,8 +24,13 @@
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
+        "typeRoots": ["./node_modules/@types", "./types"],
         "types": ["node"]
     },
-    "include": ["**/*.ts"],
-    "exclude": ["node_modules", "dist"]
+    "ts-node": {
+        "files": true
+    },
+    "include": ["**/*.ts", "types/**/*.d.ts"],
+    "exclude": ["node_modules", "dist"],
+    "files": ["types/express.d.ts"]
 }

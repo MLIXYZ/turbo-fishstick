@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express'
 import { WhereOptions } from 'sequelize'
-import StockKey from '../models/StockKey'
+import StockKey, { StockKeyInstance } from '../models/StockKey'
 import { Product, Order, OrderItem } from '../models'
+import { OrderInstance } from '../models/Order'
 import { authenticate, requireAdmin } from '../middleware/auth'
 
 const router = Router()
@@ -257,10 +258,9 @@ router.put(
                 return
             }
 
-            interface OrderWithItems extends Order {
+            const orderInstance = order as OrderInstance & {
                 items?: Array<{ product_id: number }>
             }
-            const orderInstance = order as OrderWithItems
             const orderItems = orderInstance.items || []
             const orderProductIds = orderItems.map(
                 (item: { product_id: number }) => item.product_id
@@ -274,10 +274,9 @@ router.put(
             }
 
             if (!orderProductIds.includes(stockKey.product_id)) {
-                interface StockKeyWithProduct extends StockKey {
+                const stockKeyWithProduct = stockKey as StockKeyInstance & {
                     product?: { title: string }
                 }
-                const stockKeyWithProduct = stockKey as StockKeyWithProduct
                 const productTitle =
                     stockKeyWithProduct.product?.title ||
                     `Product #${stockKey.product_id}`
