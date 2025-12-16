@@ -23,6 +23,7 @@ import {
     Alert,
     IconButton,
     Stack,
+    Skeleton,
 } from '@mui/material'
 import type { SelectChangeEvent } from '@mui/material/Select'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -73,6 +74,9 @@ function AdminInventory() {
 
     const [filterStatus, setFilterStatus] = useState<string>('all')
     const [filterProduct, setFilterProduct] = useState<string>('all')
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [totalKeys, setTotalKeys] = useState(0)
 
     const [addDialogOpen, setAddDialogOpen] = useState(false)
     const [assignDialogOpen, setAssignDialogOpen] = useState(false)
@@ -98,15 +102,33 @@ function AdminInventory() {
         }
         fetchKeys()
         fetchProducts()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, navigate])
 
     const fetchKeys = async () => {
         try {
             setLoading(true)
-            const res = await axios.get(`${API_URL}/admin/stock-keys`, {
-                headers: { Authorization: `Bearer ${token}` },
+            const params = new URLSearchParams({
+                page: page.toString(),
+                limit: '50',
             })
-            setKeys(res.data)
+
+            if (filterStatus !== 'all') {
+                params.append('status', filterStatus)
+            }
+            if (filterProduct !== 'all') {
+                params.append('product_id', filterProduct)
+            }
+
+            const res = await axios.get(
+                `${API_URL}/admin/stock-keys?${params.toString()}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            )
+            setKeys(res.data.keys)
+            setTotalPages(res.data.pagination.totalPages)
+            setTotalKeys(res.data.pagination.total)
         } catch (err) {
             console.error('Error fetching keys:', err)
             setError('Failed to fetch stock keys')
@@ -178,12 +200,13 @@ function AdminInventory() {
         }
     }
 
-    const filteredKeys = keys.filter((key) => {
-        if (filterStatus !== 'all' && key.status !== filterStatus) return false
-        if (filterProduct !== 'all' && String(key.product_id) !== filterProduct)
-            return false
-        return true
-    })
+    // Refetch when filters or page change
+    useEffect(() => {
+        if (user && token) {
+            fetchKeys()
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filterStatus, filterProduct, page])
 
     const getStatusColor = (
         status: string
@@ -200,7 +223,7 @@ function AdminInventory() {
         }
     }
 
-    if (loading) {
+    if (loading && keys.length === 0) {
         return (
             <Box>
                 <ProfileHeader />
@@ -215,16 +238,14 @@ function AdminInventory() {
                     >
                         <AdminSidebar />
                     </Box>
-                    <Box
-                        sx={{
-                            flex: 1,
-                            p: 3,
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <Typography>Loading...</Typography>
+                    <Box sx={{ flex: 1, p: 3 }}>
+                        <Skeleton variant="text" width={300} height={60} />
+                        <Skeleton
+                            variant="rectangular"
+                            height={80}
+                            sx={{ mb: 2, mt: 2 }}
+                        />
+                        <Skeleton variant="rectangular" height={400} />
                     </Box>
                 </Box>
             </Box>
@@ -285,9 +306,10 @@ function AdminInventory() {
                                 <Select
                                     value={filterStatus}
                                     label="Filter by Status"
-                                    onChange={(e: SelectChangeEvent) =>
+                                    onChange={(e: SelectChangeEvent) => {
                                         setFilterStatus(e.target.value)
-                                    }
+                                        setPage(1)
+                                    }}
                                 >
                                     <MenuItem value="all">All</MenuItem>
                                     <MenuItem value="available">
@@ -305,9 +327,10 @@ function AdminInventory() {
                                 <Select
                                     value={filterProduct}
                                     label="Filter by Product"
-                                    onChange={(e: SelectChangeEvent) =>
+                                    onChange={(e: SelectChangeEvent) => {
                                         setFilterProduct(e.target.value)
-                                    }
+                                        setPage(1)
+                                    }}
                                 >
                                     <MenuItem value="all">
                                         All Products
@@ -335,6 +358,51 @@ function AdminInventory() {
                         </Stack>
                     </Paper>
 
+                    <Paper sx={{ p: 2, mb: 2 }}>
+                        <Stack
+                            direction="row"
+                            spacing={2}
+                            alignItems="center"
+                            justifyContent="space-between"
+                        >
+                            <Typography variant="body2" color="text.secondary">
+                                Showing {keys.length} of {totalKeys} keys
+                            </Typography>
+                            <Stack direction="row" spacing={1}>
+                                <Button
+                                    size="small"
+                                    disabled={page === 1}
+                                    onClick={() =>
+                                        setPage((p) => Math.max(1, p - 1))
+                                    }
+                                >
+                                    Previous
+                                </Button>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        px: 2,
+                                    }}
+                                >
+                                    Page {page} of {totalPages}
+                                </Typography>
+                                <Button
+                                    size="small"
+                                    disabled={page >= totalPages}
+                                    onClick={() =>
+                                        setPage((p) =>
+                                            Math.min(totalPages, p + 1)
+                                        )
+                                    }
+                                >
+                                    Next
+                                </Button>
+                            </Stack>
+                        </Stack>
+                    </Paper>
+
                     <TableContainer component={Paper}>
                         <Table>
                             <TableHead>
@@ -349,7 +417,7 @@ function AdminInventory() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {filteredKeys.map((key) => (
+                                {keys.map((key) => (
                                     <TableRow key={key.id}>
                                         <TableCell>{key.id}</TableCell>
                                         <TableCell>

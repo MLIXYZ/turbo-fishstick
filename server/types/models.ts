@@ -137,6 +137,7 @@ export type OrderCreationAttributes = Optional<
 export interface OrderInstance
     extends Model<OrderAttributes, OrderCreationAttributes>, OrderAttributes {
     user?: UserInstance
+    items?: OrderItemInstance[]
 }
 
 export interface TransactionAttributes {
@@ -224,6 +225,29 @@ export interface StockKeyInstance
     extends
         Model<StockKeyAttributes, StockKeyCreationAttributes>,
         StockKeyAttributes {
+    product?: ProductInstance
+    order?: OrderInstance
+}
+
+export interface OrderItemAttributes {
+    id: number
+    order_id: number
+    product_id: number
+    quantity: number
+    price: number
+    subtotal: number
+    created_at: Date
+}
+
+export type OrderItemCreationAttributes = Optional<
+    OrderItemAttributes,
+    'id' | 'created_at'
+>
+
+export interface OrderItemInstance
+    extends
+        Model<OrderItemAttributes, OrderItemCreationAttributes>,
+        OrderItemAttributes {
     product?: ProductInstance
     order?: OrderInstance
 }

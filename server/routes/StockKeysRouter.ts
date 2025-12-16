@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express'
 import StockKey from '../models/StockKey'
-import { Product, Order } from '../models'
+import { Product, Order, OrderItem } from '../models'
 import { authenticate, requireAdmin } from '../middleware/auth'
 
 const router = Router()
@@ -12,13 +12,17 @@ router.get(
     requireAdmin,
     async (req: Request, res: Response): Promise<void> => {
         try {
-            const { product_id, status } = req.query
+            const { product_id, status, page = '1', limit = '50' } = req.query
 
             const where: any = {}
-            if (product_id) where.product_id = product_id
-            if (status) where.status = status
+            if (product_id) where.product_id = Number(product_id)
+            if (status) where.status = String(status)
 
-            const keys = await StockKey.findAll({
+            const pageNum = Math.max(1, Number(page))
+            const limitNum = Math.min(100, Math.max(1, Number(limit)))
+            const offset = (pageNum - 1) * limitNum
+
+            const { count, rows: keys } = await StockKey.findAndCountAll({
                 where,
                 include: [
                     {
@@ -34,9 +38,19 @@ router.get(
                     },
                 ],
                 order: [['created_at', 'DESC']],
+                limit: limitNum,
+                offset: offset,
             })
 
-            res.json(keys)
+            res.json({
+                keys,
+                pagination: {
+                    total: count,
+                    page: pageNum,
+                    limit: limitNum,
+                    totalPages: Math.ceil(count / limitNum),
+                },
+            })
         } catch (error) {
             console.error('Error fetching stock keys:', error)
             res.status(500).json({ error: 'Failed to fetch stock keys' })
@@ -54,7 +68,7 @@ router.get(
             const { product_id } = req.query
 
             const where: any = { status: 'available' }
-            if (product_id) where.product_id = product_id
+            if (product_id) where.product_id = Number(product_id)
 
             const count = await StockKey.count({ where })
 
@@ -171,7 +185,24 @@ router.put(
             const { id } = req.params
             const { order_id, order_number } = req.body
 
-            const stockKey = await StockKey.findByPk(id)
+            // Require at least one identifier
+            if (!order_id && !order_number) {
+                res.status(400).json({
+                    error: 'Either order_id or order_number is required',
+                })
+                return
+            }
+
+            const stockKey = await StockKey.findByPk(id, {
+                include: [
+                    {
+                        model: Product,
+                        as: 'product',
+                        attributes: ['id', 'title'],
+                    },
+                ],
+            })
+
             if (!stockKey) {
                 res.status(404).json({ error: 'Stock key not found' })
                 return
@@ -184,23 +215,94 @@ router.put(
                 return
             }
 
-            // Verify order exists if order_id provided
-            if (order_id) {
-                const order = await Order.findByPk(order_id)
+            // Find order by order_number or order_id
+            let order = null
+            if (order_number) {
+                order = await Order.findOne({
+                    where: { order_number: order_number.trim() },
+                    include: [
+                        {
+                            model: OrderItem,
+                            as: 'items',
+                            attributes: ['product_id', 'quantity'],
+                        },
+                    ],
+                })
+                if (!order) {
+                    res.status(404).json({
+                        error: `Order with number '${order_number}' not found`,
+                    })
+                    return
+                }
+            } else if (order_id) {
+                order = await Order.findByPk(order_id, {
+                    include: [
+                        {
+                            model: OrderItem,
+                            as: 'items',
+                            attributes: ['product_id', 'quantity'],
+                        },
+                    ],
+                })
                 if (!order) {
                     res.status(404).json({ error: 'Order not found' })
                     return
                 }
             }
 
+            // Validate that the stock key's product matches one of the order's items
+            if (!order) {
+                res.status(500).json({ error: 'Failed to retrieve order' })
+                return
+            }
+
+            const orderInstance = order as any // Type assertion for items relationship
+            const orderItems = orderInstance.items || []
+            const orderProductIds = orderItems.map(
+                (item: { product_id: number }) => item.product_id
+            )
+
+            if (orderProductIds.length === 0) {
+                res.status(400).json({
+                    error: 'Order has no items. Cannot assign stock key.',
+                })
+                return
+            }
+
+            if (!orderProductIds.includes(stockKey.product_id)) {
+                const stockKeyWithProduct = stockKey as any
+                const productTitle =
+                    stockKeyWithProduct.product?.title ||
+                    `Product #${stockKey.product_id}`
+                res.status(400).json({
+                    error: `Cannot assign key for ${productTitle}. This product was not in the order.`,
+                })
+                return
+            }
+
             await stockKey.update({
                 status: 'sold',
-                order_id: order_id || null,
-                order_number: order_number || null,
+                order_id: order ? order.id : null,
+                order_number: order ? order.order_number : order_number,
                 assigned_at: new Date(),
             })
 
-            res.json(stockKey)
+            const updatedKey = await StockKey.findByPk(id, {
+                include: [
+                    {
+                        model: Product,
+                        as: 'product',
+                        attributes: ['id', 'title'],
+                    },
+                    {
+                        model: Order,
+                        as: 'order',
+                        attributes: ['id', 'order_number', 'billing_email'],
+                    },
+                ],
+            })
+
+            res.json(updatedKey)
         } catch (error) {
             console.error('Error assigning stock key:', error)
             res.status(500).json({ error: 'Failed to assign stock key' })
@@ -224,9 +326,16 @@ router.put(
                 return
             }
 
-            const updates: any = {}
+            interface UpdateFields {
+                game_key?: string
+                status?: 'available' | 'sold' | 'reserved'
+                notes?: string | null
+            }
+
+            const updates: UpdateFields = {}
             if (game_key !== undefined) updates.game_key = game_key.trim()
-            if (status !== undefined) updates.status = status
+            if (status !== undefined)
+                updates.status = status as 'available' | 'sold' | 'reserved'
             if (notes !== undefined) updates.notes = notes
 
             await stockKey.update(updates)
@@ -263,7 +372,10 @@ router.delete(
 
             await stockKey.destroy()
 
-            res.json({ message: 'Stock key deleted successfully' })
+            res.json({
+                success: true,
+                message: 'Stock key deleted successfully',
+            })
         } catch (error) {
             console.error('Error deleting stock key:', error)
             res.status(500).json({ error: 'Failed to delete stock key' })

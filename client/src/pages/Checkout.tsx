@@ -16,6 +16,7 @@ import { useAuthStore } from '../store/authStore.ts'
 const API_URL = import.meta.env.VITE_API_URL
 import type { CartItem } from '../services/cart'
 import { getCart, clearCart } from '../utils/cart'
+import { useDebounce } from '../hooks/useDebounce'
 
 interface FieldErrors {
     billingName?: string
@@ -66,6 +67,7 @@ function Checkout() {
     const navigate = useNavigate()
 
     const user = useAuthStore((state) => state.user)
+    const debouncedZip = useDebounce(billingZip, 500)
 
     useEffect(() => {
         setCartItems(getCart())
@@ -101,14 +103,14 @@ function Checkout() {
     const total = +(afterDiscount + tax).toFixed(2)
 
     useEffect(() => {
-        if (!billingZip || subtotal <= 0) {
+        if (!debouncedZip || subtotal <= 0) {
             setTaxRate(null)
             setTaxError(null)
             setTaxLoading(false)
             return
         }
 
-        if (!/^\d{5}$/.test(billingZip)) {
+        if (!/^\d{5}$/.test(debouncedZip)) {
             setTaxRate(null)
             setTaxError('Please enter a valid 5-digit ZIP code.')
             setTaxLoading(false)
@@ -123,7 +125,7 @@ function Checkout() {
                 setTaxError(null)
 
                 const res = await axios.get(`${API_URL}/checkout/tax`, {
-                    params: { zip: billingZip },
+                    params: { zip: debouncedZip },
                 })
 
                 if (cancelled) return
@@ -153,7 +155,7 @@ function Checkout() {
         return () => {
             cancelled = true
         }
-    }, [billingZip, subtotal])
+    }, [debouncedZip, subtotal])
 
     // Auto-format card number: add space every 4 digits
     const formatCardNumber = (value: string): string => {

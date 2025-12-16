@@ -6,6 +6,9 @@ import {
     StockKeyCreationAttributes,
 } from '../types/models'
 
+const MAX_GAME_KEY_LENGTH = 500
+const MAX_ORDER_NUMBER_LENGTH = 50
+
 const StockKey = sequelize.define<StockKeyInstance>(
     'StockKey',
     {
@@ -23,7 +26,7 @@ const StockKey = sequelize.define<StockKeyInstance>(
             },
         },
         game_key: {
-            type: DataTypes.STRING(500),
+            type: DataTypes.STRING(MAX_GAME_KEY_LENGTH),
             allowNull: false,
             unique: true,
         },
@@ -41,7 +44,7 @@ const StockKey = sequelize.define<StockKeyInstance>(
             },
         },
         order_number: {
-            type: DataTypes.STRING(50),
+            type: DataTypes.STRING(MAX_ORDER_NUMBER_LENGTH),
             allowNull: true,
         },
         created_at: {

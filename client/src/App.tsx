@@ -19,8 +19,6 @@ import Checkout from './pages/Checkout.tsx'
 function App() {
     const [searchQuery, setSearchQuery] = useState('')
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
-    // TODO: Implement dynamic cart state management
-    const [cartItemCount] = useState<number>(0)
 
     const handleSearch = (query: string) => {
         setSearchQuery(query)
@@ -51,7 +49,6 @@ function App() {
                             <Header
                                 onSearch={handleSearch}
                                 onMenuClick={handleMenuClick}
-                                cartItemCount={cartItemCount}
                             />
 
                             <Home
@@ -125,7 +122,6 @@ function App() {
                             <Header
                                 onSearch={handleSearch}
                                 onMenuClick={handleMenuClick}
-                                cartItemCount={cartItemCount}
                             />
                             <Cart />
                         </Box>
@@ -145,7 +141,6 @@ function App() {
                             <Header
                                 onSearch={handleSearch}
                                 onMenuClick={handleMenuClick}
-                                cartItemCount={cartItemCount}
                             />
                             <Checkout />
                         </Box>

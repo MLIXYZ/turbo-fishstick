@@ -27,7 +27,6 @@ import { getCart } from '../utils/cart'
 interface HeaderProps {
     onSearch: (query: string) => void
     onMenuClick?: () => void
-    cartItemCount?: number
 }
 
 function Header({ onSearch, onMenuClick }: HeaderProps): JSX.Element {

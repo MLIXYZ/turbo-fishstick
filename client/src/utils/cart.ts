@@ -6,7 +6,8 @@ export function getCart(): CartItem[] {
     try {
         const raw = localStorage.getItem(CART_KEY)
         return raw ? JSON.parse(raw) : []
-    } catch {
+    } catch (error) {
+        console.error('Failed to parse cart from localStorage:', error)
         return []
     }
 }

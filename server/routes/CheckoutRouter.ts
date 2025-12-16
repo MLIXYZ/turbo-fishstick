@@ -5,6 +5,7 @@ import {
     sequelize,
     Product,
     Order,
+    OrderItem,
     Transaction,
     User,
     DiscountCodeLog,
@@ -276,9 +277,25 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
                 { transaction: t }
             )
 
-            // Decrease stock
+            // Create order items and decrease stock
             for (const item of cartItems) {
                 const product = productMap.get(item.productId)!
+                const price = Number(product.price)
+                const itemSubtotal = price * item.quantity
+
+                // Create order item record
+                await OrderItem.create(
+                    {
+                        order_id: order.id,
+                        product_id: product.id,
+                        quantity: item.quantity,
+                        price: price,
+                        subtotal: itemSubtotal,
+                    },
+                    { transaction: t }
+                )
+
+                // Decrease stock
                 const newStock = product.stock - item.quantity
                 if (newStock < 0) {
                     throw new Error(
