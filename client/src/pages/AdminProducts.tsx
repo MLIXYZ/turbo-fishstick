@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'
 import {
     Box,
     Typography,
@@ -18,37 +18,38 @@ import {
     DialogActions,
     TextField,
     Chip,
-    IconButton
-} from '@mui/material';
-import { Edit, Delete, Add } from '@mui/icons-material';
-import ProfileHeader from "../components/ProfileHeader.tsx";
-import AdminSidebar from "../components/AdminSidebar.tsx";
-import axios from "axios";
-
-// TODO: authentication somehow?
+    IconButton,
+} from '@mui/material'
+import { Edit, Delete, Add } from '@mui/icons-material'
+import { useNavigate } from 'react-router-dom'
+import ProfileHeader from '../components/ProfileHeader.tsx'
+import AdminSidebar from '../components/AdminSidebar.tsx'
+import api from '../services/api'
+import { useAuthStore } from '../store/authStore'
+import ROUTES from '../config/routes'
 
 interface Product {
-    id: number;
-    title: string;
-    description: string;
-    price: number;
-    category_id: number;
-    platform: string;
-    image_url: string;
-    stock: number;
-    is_active: boolean;
-    created_at: string;
-    updated_at: string;
+    id: number
+    title: string
+    description: string
+    price: number
+    category_id: number
+    platform: string
+    image_url: string
+    stock: number
+    is_active: boolean
+    created_at: string
+    updated_at: string
 }
 
-const API_URL = 'http://localhost:3000/api';
-
-export default function Admin() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [openDialog, setOpenDialog] = useState(false);
-    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+export default function AdminProducts() {
+    const navigate = useNavigate()
+    const { user, isAuthenticated } = useAuthStore()
+    const [products, setProducts] = useState<Product[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [openDialog, setOpenDialog] = useState(false)
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null)
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -57,29 +58,40 @@ export default function Admin() {
         platform: '',
         image_url: '',
         stock: '',
-        is_active: true
-    });
+        is_active: true,
+    })
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         try {
-            setLoading(true);
-            const response = await axios.get(`${API_URL}/admin/products`);
-            setProducts(response.data);
-            setLoading(false);
+            setLoading(true)
+            const response = await api.get('/admin/products')
+            setProducts(response.data)
+            setLoading(false)
         } catch (error) {
-            console.error('Error fetching products', error);
-            setError('Failed to load products');
-            setLoading(false);
+            console.error('Error fetching products', error)
+            setError('Failed to load products')
+            setLoading(false)
         }
-    };
+    }, [])
 
     useEffect(() => {
-        fetchProducts();
-    }, []);
+        // Redirect if not authenticated or not admin
+        if (!isAuthenticated || !user) {
+            navigate(ROUTES.LOGIN)
+            return
+        }
+        if (user.role !== 'admin') {
+            navigate(ROUTES.HOME)
+            return
+        }
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void fetchProducts()
+    }, [isAuthenticated, user, navigate, fetchProducts])
 
     const handleOpenDialog = (product?: Product) => {
         if (product) {
-            setEditingProduct(product);
+            setEditingProduct(product)
             setFormData({
                 title: product.title,
                 description: product.description,
@@ -88,10 +100,10 @@ export default function Admin() {
                 platform: product.platform,
                 image_url: product.image_url,
                 stock: product.stock.toString(),
-                is_active: product.is_active
-            });
+                is_active: product.is_active,
+            })
         } else {
-            setEditingProduct(null);
+            setEditingProduct(null)
             setFormData({
                 title: '',
                 description: '',
@@ -100,57 +112,58 @@ export default function Admin() {
                 platform: '',
                 image_url: '',
                 stock: '',
-                is_active: true
-            });
+                is_active: true,
+            })
         }
-        setOpenDialog(true);
-    };
+        setOpenDialog(true)
+    }
     const handleCloseDialog = () => {
-        setOpenDialog(false);
-        setEditingProduct(null);
-    };
+        setOpenDialog(false)
+        setEditingProduct(null)
+    }
     const handleSubmit = async () => {
         try {
             if (editingProduct) {
                 // update existing product
-                await axios.put(`${API_URL}/admin/products/${editingProduct.id}`, {
+                await api.put(`/admin/products/${editingProduct.id}`, {
                     ...formData,
                     price: parseFloat(formData.price),
                     category_id: parseInt(formData.category_id),
-                    stock: parseInt(formData.stock)
-                });
+                    stock: parseInt(formData.stock),
+                })
             } else {
                 // create new product
-                await axios.post(`${API_URL}/admin/products`, {
+                await api.post('/admin/products', {
                     ...formData,
                     price: parseFloat(formData.price),
                     category_id: parseInt(formData.category_id),
-                    stock: parseInt(formData.stock)
-                });
+                    stock: parseInt(formData.stock),
+                })
             }
-            handleCloseDialog();
-            fetchProducts();
+            handleCloseDialog()
+            fetchProducts()
         } catch (error) {
-            console.error('Error saving product', error);
-            setError('Failed to save product');
+            console.error('Error saving product', error)
+            setError('Failed to save product')
         }
-    };
+    }
     const handleDelete = async (productId: number) => {
-        if (!confirm('Are you sure you want to delete this product?')) return;
+        if (!window.confirm('Are you sure you want to delete this product?'))
+            return
         try {
-            await axios.delete(`${API_URL}/admin/products/${productId}`);
-            fetchProducts();
+            await api.delete(`/admin/products/${productId}`)
+            fetchProducts()
         } catch (error) {
-            console.error('Error deleting product', error);
-            setError('Failed to delete product');
+            console.error('Error deleting product', error)
+            setError('Failed to delete product')
         }
-    };
-    const handleInputChange = (field: string, value: any) => {
-        setFormData(prev => ({
+    }
+    const handleInputChange = (field: string, value: string | boolean) => {
+        setFormData((prev) => ({
             ...prev,
-            [field]: value
-        }));
-    };
+            [field]: value,
+        }))
+    }
 
     if (loading) {
         return (
@@ -158,19 +171,39 @@ export default function Admin() {
                 <ProfileHeader />
                 <Box sx={{ display: 'flex', minHeight: '100vh' }}>
                     {/* sidebar */}
-                    <Box sx={{ width: 250, borderRight: 1, borderColor: 'divider', flexShrink: 0 }}>
+                    <Box
+                        sx={{
+                            width: 250,
+                            borderRight: 1,
+                            borderColor: 'divider',
+                            flexShrink: 0,
+                        }}
+                    >
                         <AdminSidebar />
                     </Box>
                     {/* main */}
                     <Box sx={{ flex: 1, p: 3 }}>
-                        <Typography variant="h4" fontWeight="Bold" sx={{ mb: 2 }}>Admin Dashboard - Products</Typography>
-                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <Typography
+                            variant="h4"
+                            fontWeight="Bold"
+                            sx={{ mb: 2 }}
+                        >
+                            Admin Dashboard - Products
+                        </Typography>
+                        <Box
+                            sx={{
+                                flex: 1,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
                             <CircularProgress />
                         </Box>
                     </Box>
                 </Box>
             </Box>
-        );
+        )
     }
 
     return (
@@ -178,13 +211,24 @@ export default function Admin() {
             <ProfileHeader />
             <Box sx={{ display: 'flex', minHeight: '100vh' }}>
                 {/* sidebar */}
-                <Box sx={{ width: 250, borderRight: 1, borderColor: 'divider' }}>
+                <Box
+                    sx={{ width: 250, borderRight: 1, borderColor: 'divider' }}
+                >
                     <AdminSidebar />
                 </Box>
                 {/* main */}
                 <Box sx={{ flex: 1, p: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                        <Typography variant="h4" fontWeight="Bold">Admin Dashboard - Products</Typography>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            mb: 3,
+                        }}
+                    >
+                        <Typography variant="h4" fontWeight="Bold">
+                            Admin Dashboard - Products
+                        </Typography>
                         <Button
                             variant="contained"
                             startIcon={<Add />}
@@ -195,7 +239,11 @@ export default function Admin() {
                     </Box>
 
                     {error && (
-                        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+                        <Alert
+                            severity="error"
+                            sx={{ mb: 2 }}
+                            onClose={() => setError(null)}
+                        >
                             {error}
                         </Alert>
                     )}
@@ -220,13 +268,25 @@ export default function Admin() {
                                         <TableCell>{product.id}</TableCell>
                                         <TableCell>{product.title}</TableCell>
                                         <TableCell>${product.price}</TableCell>
-                                        <TableCell>{product.category_id}</TableCell>
-                                        <TableCell>{product.platform}</TableCell>
+                                        <TableCell>
+                                            {product.category_id}
+                                        </TableCell>
+                                        <TableCell>
+                                            {product.platform}
+                                        </TableCell>
                                         <TableCell>{product.stock}</TableCell>
                                         <TableCell>
                                             <Chip
-                                                label={product.is_active ? 'Active' : 'Inactive'}
-                                                color={product.is_active ? 'success' : 'default'}
+                                                label={
+                                                    product.is_active
+                                                        ? 'Active'
+                                                        : 'Inactive'
+                                                }
+                                                color={
+                                                    product.is_active
+                                                        ? 'success'
+                                                        : 'default'
+                                                }
                                                 size="small"
                                             />
                                         </TableCell>
@@ -234,14 +294,18 @@ export default function Admin() {
                                             <IconButton
                                                 size="small"
                                                 color="primary"
-                                                onClick={() => handleOpenDialog(product)}
+                                                onClick={() =>
+                                                    handleOpenDialog(product)
+                                                }
                                             >
                                                 <Edit />
                                             </IconButton>
                                             <IconButton
                                                 size="small"
                                                 color="primary"
-                                                onClick={() => handleDelete(product.id)}
+                                                onClick={() =>
+                                                    handleDelete(product.id)
+                                                }
                                             >
                                                 <Delete />
                                             </IconButton>
@@ -253,23 +317,45 @@ export default function Admin() {
                     </TableContainer>
 
                     {/* add/edit dialog */}
-                    <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+                    <Dialog
+                        open={openDialog}
+                        onClose={handleCloseDialog}
+                        maxWidth="md"
+                        fullWidth
+                    >
                         <DialogTitle>
                             {editingProduct ? 'Edit Product' : 'Add Product'}
                         </DialogTitle>
                         <DialogContent>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 2,
+                                    mt: 2,
+                                }}
+                            >
                                 <TextField
                                     label="Title"
                                     value={formData.title}
-                                    onChange={(e) => handleInputChange('title', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            'title',
+                                            e.target.value
+                                        )
+                                    }
                                     fullWidth
                                     required
                                 />
                                 <TextField
                                     label="Description"
                                     value={formData.description}
-                                    onChange={(e) => handleInputChange('description', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            'description',
+                                            e.target.value
+                                        )
+                                    }
                                     multiline
                                     rows={3}
                                     fullWidth
@@ -280,7 +366,12 @@ export default function Admin() {
                                         label="Price"
                                         type="number"
                                         value={formData.price}
-                                        onChange={(e) => handleInputChange('price', e.target.value)}
+                                        onChange={(e) =>
+                                            handleInputChange(
+                                                'price',
+                                                e.target.value
+                                            )
+                                        }
                                         fullWidth
                                         required
                                     />
@@ -288,7 +379,12 @@ export default function Admin() {
                                         label="Category"
                                         type="number"
                                         value={formData.category_id}
-                                        onChange={(e) => handleInputChange('category_id', e.target.value)}
+                                        onChange={(e) =>
+                                            handleInputChange(
+                                                'category_id',
+                                                e.target.value
+                                            )
+                                        }
                                         fullWidth
                                         required
                                     />
@@ -296,14 +392,24 @@ export default function Admin() {
                                         label="Stock"
                                         type="number"
                                         value={formData.stock}
-                                        onChange={(e) => handleInputChange('stock', e.target.value)}
+                                        onChange={(e) =>
+                                            handleInputChange(
+                                                'stock',
+                                                e.target.value
+                                            )
+                                        }
                                         fullWidth
                                         required
                                     />
                                     <TextField
                                         label="Platform"
                                         value={formData.platform}
-                                        onChange={(e) => handleInputChange('platform', e.target.value)}
+                                        onChange={(e) =>
+                                            handleInputChange(
+                                                'platform',
+                                                e.target.value
+                                            )
+                                        }
                                         fullWidth
                                         required
                                     />
@@ -312,7 +418,12 @@ export default function Admin() {
                                     <TextField
                                         label="Image URL"
                                         value={formData.image_url}
-                                        onChange={(e) => handleInputChange('image_url', e.target.value)}
+                                        onChange={(e) =>
+                                            handleInputChange(
+                                                'image_url',
+                                                e.target.value
+                                            )
+                                        }
                                         fullWidth
                                         required
                                     />
