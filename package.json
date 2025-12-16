@@ -9,7 +9,9 @@
         "server": "cd server && npm run dev",
         "install:all": "npm install && cd client && npm install && cd ../server && npm install && cd ..",
         "build:client": "cd client && npm run build",
-        "build:server": "cd server && npm run build"
+        "build:server": "cd server && npm run build",
+        "build": "npm run build:server && npm run build:client",
+        "start": "cd server && npm start"
     },
     "keywords": [
         "express",
