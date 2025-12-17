@@ -251,3 +251,50 @@ export interface OrderItemInstance
     product?: ProductInstance
     order?: OrderInstance
 }
+
+export interface ReviewAttributes {
+    id: number
+    product_id: number
+    user_id: number | null
+    order_id: number | null
+    rating: number
+    title: string | null
+    comment: string | null
+    reviewer_name: string | null
+    reviewer_email: string | null
+    turnstile_token: string | null
+    ip_address: string | null
+    user_agent: string | null
+    is_verified: boolean
+    is_approved: boolean
+    helpful_count: number
+    created_at: Date
+    updated_at: Date
+}
+
+export type ReviewCreationAttributes = Optional<
+    ReviewAttributes,
+    | 'id'
+    | 'user_id'
+    | 'order_id'
+    | 'title'
+    | 'comment'
+    | 'reviewer_name'
+    | 'reviewer_email'
+    | 'turnstile_token'
+    | 'ip_address'
+    | 'user_agent'
+    | 'is_verified'
+    | 'is_approved'
+    | 'helpful_count'
+    | 'created_at'
+    | 'updated_at'
+>
+
+export interface ReviewInstance
+    extends
+        Model<ReviewAttributes, ReviewCreationAttributes>,
+        ReviewAttributes {
+    user?: UserInstance
+    product?: ProductInstance
+}

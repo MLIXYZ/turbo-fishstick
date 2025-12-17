@@ -23,6 +23,7 @@ import {
 import cardValidationRoutes from './routes/CardValidationRouter'
 import checkoutRoutes from './routes/CheckoutRouter'
 import stockKeysRoutes from './routes/StockKeysRouter'
+import reviewRoutes from './routes/ReviewRouter'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -44,6 +45,9 @@ app.use('/api/checkout', checkoutRoutes)
 
 // Stock Keys Management
 app.use('/api/admin/stock-keys', stockKeysRoutes)
+
+// Reviews
+app.use('/api/products', reviewRoutes)
 
 app.get(
     '/api/categories',

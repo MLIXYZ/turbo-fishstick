@@ -7,6 +7,7 @@ import OrderItem from './OrderItem'
 import Transaction from './Transaction'
 import DiscountCodeLog from './DiscountCodeLog'
 import StockKey from './StockKey'
+import Review from './Review'
 
 // Product - Category relationship
 Product.belongsTo(Category, {
@@ -107,6 +108,39 @@ Product.hasMany(OrderItem, {
     as: 'order_items',
 })
 
+// Review - Product relationship
+Review.belongsTo(Product, {
+    foreignKey: 'product_id',
+    as: 'product',
+})
+
+Product.hasMany(Review, {
+    foreignKey: 'product_id',
+    as: 'reviews',
+})
+
+// Review - User relationship (nullable for anonymous reviews)
+Review.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'user',
+})
+
+User.hasMany(Review, {
+    foreignKey: 'user_id',
+    as: 'reviews',
+})
+
+// Review - Order relationship
+Review.belongsTo(Order, {
+    foreignKey: 'order_id',
+    as: 'order',
+})
+
+Order.hasMany(Review, {
+    foreignKey: 'order_id',
+    as: 'reviews',
+})
+
 export const syncDatabase = async (): Promise<void> => {
     try {
         if (process.env.NODE_ENV === 'development') {
@@ -129,4 +163,5 @@ export {
     Transaction,
     DiscountCodeLog,
     StockKey,
+    Review,
 }
