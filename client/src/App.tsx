@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import ROUTES from './config/routes'
 import Profile from './pages/profile'
+import Orders from './pages/Orders'
 import Admin from './pages/admin'
 import AdminProducts from './pages/AdminProducts'
 import AdminOrders from './pages/AdminOrders'
@@ -93,6 +94,7 @@ function App() {
                 <Route path={ROUTES.LOGIN} element={<Login />} />
                 <Route path={ROUTES.SIGNUP} element={<SignUp />} />
                 <Route path={ROUTES.PROFILE} element={<Profile />} />
+                <Route path={ROUTES.ORDERS} element={<Orders />} />
                 <Route path={ROUTES.ADMIN} element={<Admin />} />
                 <Route
                     path={ROUTES.ADMIN_PRODUCTS}

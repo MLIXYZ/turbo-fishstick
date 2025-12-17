@@ -9,6 +9,7 @@ import {
     Transaction,
     User,
     DiscountCodeLog,
+    StockKey,
 } from '../models'
 import { getTaxRateForZip } from '../utils/tax'
 
@@ -194,11 +195,19 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
                 return
             }
 
-            if (product.stock < requestedQty) {
+            // Check available stock from stock_keys table
+            const availableStock = await StockKey.count({
+                where: {
+                    product_id: item.productId,
+                    status: 'available',
+                },
+            })
+
+            if (availableStock < requestedQty) {
                 res.status(409).json({
                     error: `Insufficient stock for product ${product.title}.`,
                     productId: product.id,
-                    availableStock: product.stock,
+                    availableStock,
                 })
                 return
             }
@@ -277,7 +286,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
                 { transaction: t }
             )
 
-            // Create order items and decrease stock
+            // Create order items and assign keys
             for (const item of cartItems) {
                 const product = productMap.get(item.productId)!
                 const price = Number(product.price)
@@ -295,15 +304,35 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
                     { transaction: t }
                 )
 
-                // Decrease stock
-                const newStock = product.stock - item.quantity
-                if (newStock < 0) {
+                // Assign keys from stock_keys table
+                const availableKeys = await StockKey.findAll({
+                    where: {
+                        product_id: product.id,
+                        status: 'available',
+                    },
+                    limit: item.quantity,
+                    lock: t.LOCK.UPDATE,
+                    transaction: t,
+                })
+
+                if (availableKeys.length < item.quantity) {
                     throw new Error(
-                        `Stock race condition for product ${product.id}`
+                        `Stock race condition for product ${product.id}: not enough available keys`
                     )
                 }
 
-                await product.update({ stock: newStock }, { transaction: t })
+                // Update keys to sold status and assign to order
+                for (const key of availableKeys) {
+                    await key.update(
+                        {
+                            status: 'sold',
+                            order_id: order.id,
+                            order_number: orderNumber,
+                            assigned_at: new Date(),
+                        },
+                        { transaction: t }
+                    )
+                }
             }
 
             // Record transaction

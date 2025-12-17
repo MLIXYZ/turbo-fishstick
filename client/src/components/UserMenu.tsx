@@ -13,7 +13,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
     faUser,
     faShoppingBag,
-    faGear,
     faRightFromBracket,
     faShield,
 } from '@fortawesome/free-solid-svg-icons'
@@ -196,26 +195,21 @@ function UserMenu() {
                     </MenuItem>
                 )}
 
-                <Divider />
-
-                {/* Settings */}
-                <MenuItem onClick={() => handleMenuItemClick()}>
-                    <ListItemIcon>
-                        <FontAwesomeIcon icon={faGear} />
-                    </ListItemIcon>
-                    <Typography variant="body2">Settings</Typography>
-                </MenuItem>
-
                 {/* Admin Panel (only for admins) */}
                 {user.role === 'admin' && (
-                    <MenuItem onClick={() => handleMenuItemClick(ROUTES.ADMIN)}>
-                        <ListItemIcon>
-                            <FontAwesomeIcon icon={faShield} />
-                        </ListItemIcon>
-                        <Typography variant="body2" color="primary">
-                            Admin Panel
-                        </Typography>
-                    </MenuItem>
+                    <>
+                        <Divider />
+                        <MenuItem
+                            onClick={() => handleMenuItemClick(ROUTES.ADMIN)}
+                        >
+                            <ListItemIcon>
+                                <FontAwesomeIcon icon={faShield} />
+                            </ListItemIcon>
+                            <Typography variant="body2" color="primary">
+                                Admin Panel
+                            </Typography>
+                        </MenuItem>
+                    </>
                 )}
 
                 <Divider />

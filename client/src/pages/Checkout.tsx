@@ -8,7 +8,11 @@ import {
     Paper,
     TextField,
     Alert,
+    AlertTitle,
+    Snackbar,
+    CircularProgress,
 } from '@mui/material'
+import { CheckCircle } from '@mui/icons-material'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import ROUTES from '../config/routes'
@@ -53,6 +57,8 @@ function Checkout() {
     const [errors, setErrors] = useState<FieldErrors>({})
     const [touched, setTouched] = useState<TouchedFields>({})
     const [checkoutError, setCheckoutError] = useState<string | null>(null)
+    const [orderSuccess, setOrderSuccess] = useState(false)
+    const [orderNumber, setOrderNumber] = useState<string | null>(null)
 
     const [taxRate, setTaxRate] = useState<number | null>(null)
     const [taxLoading, setTaxLoading] = useState(false)
@@ -72,6 +78,13 @@ function Checkout() {
     useEffect(() => {
         setCartItems(getCart())
     }, [])
+
+    // Scroll to top when there's an error or success
+    useEffect(() => {
+        if (checkoutError || orderSuccess) {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+    }, [checkoutError, orderSuccess])
 
     //prefill info if logged in
     useEffect(() => {
@@ -421,8 +434,14 @@ function Checkout() {
             localStorage.setItem('shopping_cart_v1', '[]')
             setCartItems([])
 
-            alert('Order placed successfully!')
-            navigate(ROUTES.HOME)
+            // Set success state
+            setOrderSuccess(true)
+            setOrderNumber(res.data.order?.order_number || null)
+
+            // Navigate to orders page after a delay
+            setTimeout(() => {
+                navigate(ROUTES.ORDERS)
+            }, 2000)
         } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 422) {
                 const data = err.response.data as {
@@ -465,8 +484,22 @@ function Checkout() {
                     </Typography>
                 </Box>
 
+                {orderSuccess && (
+                    <Alert severity="success" sx={{ mb: 3 }}>
+                        <AlertTitle>Order Placed Successfully!</AlertTitle>
+                        {orderNumber && (
+                            <>
+                                Your order number is <strong>{orderNumber}</strong>.
+                                <br />
+                            </>
+                        )}
+                        You will be redirected to your orders page shortly...
+                    </Alert>
+                )}
+
                 {checkoutError && (
                     <Alert severity="error" sx={{ mb: 3 }}>
+                        <AlertTitle>Checkout Error</AlertTitle>
                         {checkoutError}
                     </Alert>
                 )}
@@ -623,9 +656,18 @@ function Checkout() {
                     </Typography>
 
                     {cartItems.length === 0 ? (
-                        <Typography variant="body2" color="text.secondary">
-                            Your cart is empty.
-                        </Typography>
+                        <Alert severity="info">
+                            <AlertTitle>Cart is Empty</AlertTitle>
+                            Your cart is empty. Please add items to your cart
+                            before checking out.
+                            <Button
+                                variant="text"
+                                onClick={() => navigate(ROUTES.HOME)}
+                                sx={{ mt: 1 }}
+                            >
+                                Continue Shopping
+                            </Button>
+                        </Alert>
                     ) : (
                         <>
                             <Typography variant="body2" sx={{ mb: 0.5 }}>
@@ -638,41 +680,54 @@ function Checkout() {
                                     Discount Code
                                 </Typography>
                                 {!discountApplied ? (
-                                    <Box sx={{ display: 'flex', gap: 1 }}>
-                                        <TextField
-                                            size="small"
-                                            placeholder="Enter code"
-                                            value={discountCode}
-                                            onChange={(e) =>
-                                                setDiscountCode(
-                                                    e.target.value.toUpperCase()
-                                                )
-                                            }
-                                            error={!!discountError}
-                                            helperText={discountError}
-                                            disabled={discountLoading}
-                                            sx={{ flexGrow: 1 }}
-                                        />
-                                        <Button
-                                            variant="outlined"
-                                            onClick={handleApplyDiscount}
-                                            disabled={
-                                                discountLoading || !discountCode
-                                            }
-                                        >
-                                            {discountLoading
-                                                ? 'Checking...'
-                                                : 'Apply'}
-                                        </Button>
-                                    </Box>
+                                    <>
+                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                            <TextField
+                                                size="small"
+                                                placeholder="Enter code"
+                                                value={discountCode}
+                                                onChange={(e) =>
+                                                    setDiscountCode(
+                                                        e.target.value.toUpperCase()
+                                                    )
+                                                }
+                                                error={!!discountError}
+                                                disabled={discountLoading}
+                                                sx={{ flexGrow: 1 }}
+                                            />
+                                            <Button
+                                                variant="outlined"
+                                                onClick={handleApplyDiscount}
+                                                disabled={
+                                                    discountLoading ||
+                                                    !discountCode
+                                                }
+                                            >
+                                                {discountLoading
+                                                    ? 'Checking...'
+                                                    : 'Apply'}
+                                            </Button>
+                                        </Box>
+                                        {discountError && (
+                                            <Alert
+                                                severity="error"
+                                                sx={{ mt: 1 }}
+                                            >
+                                                {discountError}
+                                            </Alert>
+                                        )}
+                                    </>
                                 ) : (
                                     <Alert
                                         severity="success"
                                         onClose={handleRemoveDiscount}
                                         sx={{ mt: 1 }}
                                     >
-                                        Code &quot;{discountCode}&quot; applied
-                                        ({discountPercent}% off)
+                                        <AlertTitle>
+                                            Discount Code Applied
+                                        </AlertTitle>
+                                        Code &quot;{discountCode}&quot; ({discountPercent}
+                                        % off)
                                     </Alert>
                                 )}
                             </Box>
@@ -697,6 +752,7 @@ function Checkout() {
 
                             {taxError && (
                                 <Alert severity="warning" sx={{ my: 1 }}>
+                                    <AlertTitle>Tax Calculation Warning</AlertTitle>
                                     {taxError}
                                 </Alert>
                             )}
@@ -711,20 +767,56 @@ function Checkout() {
 
                             <Button
                                 variant="contained"
-                                color="primary"
+                                color={orderSuccess ? 'success' : 'primary'}
+                                fullWidth
                                 disabled={
-                                    placingOrder || cartItems.length === 0
+                                    placingOrder ||
+                                    cartItems.length === 0 ||
+                                    orderSuccess
                                 }
                                 onClick={handlePlaceOrder}
+                                size="large"
+                                startIcon={
+                                    orderSuccess ? (
+                                        <CheckCircle />
+                                    ) : placingOrder ? (
+                                        <CircularProgress
+                                            size={20}
+                                            color="inherit"
+                                        />
+                                    ) : null
+                                }
                             >
-                                {placingOrder
-                                    ? 'Placing Order...'
-                                    : 'Place Order'}
+                                {orderSuccess
+                                    ? 'Order Placed Successfully!'
+                                    : placingOrder
+                                      ? 'Placing Order...'
+                                      : 'Place Order'}
                             </Button>
                         </>
                     )}
                 </Paper>
             </Container>
+
+            {/* Success Snackbar */}
+            <Snackbar
+                open={orderSuccess}
+                autoHideDuration={6000}
+                onClose={() => setOrderSuccess(false)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert
+                    onClose={() => setOrderSuccess(false)}
+                    severity="success"
+                    variant="filled"
+                    sx={{ width: '100%' }}
+                >
+                    <AlertTitle>Order Placed Successfully!</AlertTitle>
+                    {orderNumber
+                        ? `Order ${orderNumber} has been placed.`
+                        : 'Your order has been placed.'}
+                </Alert>
+            </Snackbar>
         </Box>
     )
 }

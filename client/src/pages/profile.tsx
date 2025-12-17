@@ -3,6 +3,7 @@ import {
     Container,
     CircularProgress,
     Alert,
+    AlertTitle,
     Box,
     Avatar,
     Paper,
@@ -12,8 +13,12 @@ import {
     List,
     ListItem,
     Card,
+    TextField,
+    Button,
+    IconButton,
+    InputAdornment,
 } from '@mui/material'
-import { Person } from '@mui/icons-material'
+import { Person, Visibility, VisibilityOff } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import { useAuthStore } from '../store/authStore'
@@ -54,6 +59,17 @@ export default function Profile() {
     const [orders, setOrders] = useState<Order[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+
+    // Password update state
+    const [currentPassword, setCurrentPassword] = useState('')
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+    const [showNewPassword, setShowNewPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+    const [passwordError, setPasswordError] = useState<string | null>(null)
+    const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null)
+    const [updatingPassword, setUpdatingPassword] = useState(false)
 
     const fetchInfo = useCallback(async () => {
         if (!authUser) return
@@ -101,6 +117,51 @@ export default function Profile() {
             month: 'long',
             day: 'numeric',
         })
+    }
+
+    const handleUpdatePassword = async () => {
+        setPasswordError(null)
+        setPasswordSuccess(null)
+
+        // Validation
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            setPasswordError('All fields are required')
+            return
+        }
+
+        if (newPassword.length < 8) {
+            setPasswordError('New password must be at least 8 characters long')
+            return
+        }
+
+        if (newPassword !== confirmPassword) {
+            setPasswordError('New passwords do not match')
+            return
+        }
+
+        try {
+            setUpdatingPassword(true)
+            await api.put('/auth/update-password', {
+                currentPassword,
+                newPassword,
+            })
+
+            setPasswordSuccess('Password updated successfully!')
+            setCurrentPassword('')
+            setNewPassword('')
+            setConfirmPassword('')
+
+            // Clear success message after 5 seconds
+            setTimeout(() => {
+                setPasswordSuccess(null)
+            }, 5000)
+        } catch (err: any) {
+            const errorMessage =
+                err.response?.data?.error || 'Failed to update password'
+            setPasswordError(errorMessage)
+        } finally {
+            setUpdatingPassword(false)
+        }
     }
 
     if (loading) {
@@ -180,6 +241,133 @@ export default function Profile() {
                                     {formatDate(user?.last_login as string)}
                                 </Typography>
                             </Box>
+                        </Paper>
+
+                        {/* Password Update Section */}
+                        <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
+                            <Typography variant="h5" fontWeight="bold">
+                                🔒 Update Password
+                            </Typography>
+                            <Divider sx={{ my: 2 }} />
+
+                            {passwordSuccess && (
+                                <Alert severity="success" sx={{ mb: 2 }}>
+                                    <AlertTitle>Success</AlertTitle>
+                                    {passwordSuccess}
+                                </Alert>
+                            )}
+
+                            {passwordError && (
+                                <Alert severity="error" sx={{ mb: 2 }}>
+                                    <AlertTitle>Error</AlertTitle>
+                                    {passwordError}
+                                </Alert>
+                            )}
+
+                            <TextField
+                                fullWidth
+                                label="Current Password"
+                                type={showCurrentPassword ? 'text' : 'password'}
+                                value={currentPassword}
+                                onChange={(e) =>
+                                    setCurrentPassword(e.target.value)
+                                }
+                                margin="normal"
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                onClick={() =>
+                                                    setShowCurrentPassword(
+                                                        !showCurrentPassword
+                                                    )
+                                                }
+                                                edge="end"
+                                            >
+                                                {showCurrentPassword ? (
+                                                    <VisibilityOff />
+                                                ) : (
+                                                    <Visibility />
+                                                )}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+
+                            <TextField
+                                fullWidth
+                                label="New Password"
+                                type={showNewPassword ? 'text' : 'password'}
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                margin="normal"
+                                helperText="Must be at least 8 characters"
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                onClick={() =>
+                                                    setShowNewPassword(
+                                                        !showNewPassword
+                                                    )
+                                                }
+                                                edge="end"
+                                            >
+                                                {showNewPassword ? (
+                                                    <VisibilityOff />
+                                                ) : (
+                                                    <Visibility />
+                                                )}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+
+                            <TextField
+                                fullWidth
+                                label="Confirm New Password"
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                value={confirmPassword}
+                                onChange={(e) =>
+                                    setConfirmPassword(e.target.value)
+                                }
+                                margin="normal"
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                onClick={() =>
+                                                    setShowConfirmPassword(
+                                                        !showConfirmPassword
+                                                    )
+                                                }
+                                                edge="end"
+                                            >
+                                                {showConfirmPassword ? (
+                                                    <VisibilityOff />
+                                                ) : (
+                                                    <Visibility />
+                                                )}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                fullWidth
+                                onClick={handleUpdatePassword}
+                                disabled={updatingPassword}
+                                sx={{ mt: 3 }}
+                            >
+                                {updatingPassword
+                                    ? 'Updating Password...'
+                                    : 'Update Password'}
+                            </Button>
                         </Paper>
                     </Grid>
 

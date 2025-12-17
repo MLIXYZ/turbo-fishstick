@@ -12,7 +12,9 @@ import {
     syncDatabase,
     User,
     Order,
+    OrderItem,
     DiscountCodeLog,
+    StockKey,
 } from './models'
 import authRoutes from './routes/auth'
 import {
@@ -95,7 +97,23 @@ app.get('/api/products', async (req: Request, res: Response): Promise<void> => {
             order: [['created_at', 'DESC']],
         })
 
-        res.json(products)
+        // Add available stock count from stock_keys table
+        const productsWithStock = await Promise.all(
+            products.map(async (product) => {
+                const availableStock = await StockKey.count({
+                    where: {
+                        product_id: product.id,
+                        status: 'available',
+                    },
+                })
+                return {
+                    ...product.toJSON(),
+                    stock: availableStock,
+                }
+            })
+        )
+
+        res.json(productsWithStock)
     } catch (error) {
         console.error('Error fetching products:', error)
         res.status(500).json({ error: 'Failed to fetch products' })
@@ -121,7 +139,18 @@ app.get(
                 return
             }
 
-            res.json(product)
+            // Add available stock count from stock_keys table
+            const availableStock = await StockKey.count({
+                where: {
+                    product_id: product.id,
+                    status: 'available',
+                },
+            })
+
+            res.json({
+                ...product.toJSON(),
+                stock: availableStock,
+            })
         } catch (error) {
             console.error('Error fetching product:', error)
             res.status(500).json({ error: 'Failed to fetch product' })
@@ -167,7 +196,89 @@ app.get(
         }
     }
 )
-// customer orders - requires authentication, user can only view their own orders or admin can view any
+// Get current user's orders - requires authentication
+app.get(
+    '/api/orders',
+    authenticate,
+    async (req: Request, res: Response): Promise<void> => {
+        try {
+            const userId = req.user!.id
+            const orders = await Order.findAll({
+                where: { user_id: userId },
+                include: [
+                    {
+                        model: OrderItem,
+                        as: 'items',
+                        include: [
+                            {
+                                model: Product,
+                                as: 'product',
+                                attributes: ['id', 'title', 'image_url', 'platform'],
+                            },
+                        ],
+                    },
+                    {
+                        model: StockKey,
+                        as: 'stock_keys',
+                        attributes: ['id', 'game_key', 'product_id', 'status', 'assigned_at'],
+                    },
+                ],
+                order: [['created_at', 'DESC']],
+            })
+            res.json(orders)
+        } catch (error) {
+            console.error('Error fetching orders:', error)
+            res.status(500).json({ error: 'Failed to fetch orders' })
+        }
+    }
+)
+
+// Get specific order by ID - requires authentication, user can only view their own orders
+app.get(
+    '/api/orders/:id',
+    authenticate,
+    async (req: Request, res: Response): Promise<void> => {
+        try {
+            const userId = req.user!.id
+            const order = await Order.findOne({
+                where: {
+                    id: req.params.id,
+                    user_id: userId // Ensure user can only see their own orders
+                },
+                include: [
+                    {
+                        model: OrderItem,
+                        as: 'items',
+                        include: [
+                            {
+                                model: Product,
+                                as: 'product',
+                                attributes: ['id', 'title', 'description', 'image_url', 'platform'],
+                            },
+                        ],
+                    },
+                    {
+                        model: StockKey,
+                        as: 'stock_keys',
+                        attributes: ['id', 'game_key', 'product_id', 'status', 'assigned_at'],
+                    },
+                ],
+            })
+
+            if (!order) {
+                res.status(404).json({ error: 'Order not found' })
+                return
+            }
+
+            res.json(order)
+        } catch (error) {
+            console.error('Error fetching order:', error)
+            res.status(500).json({ error: 'Failed to fetch order' })
+        }
+    }
+)
+
+// Get specific user's orders - requires authentication, user can only view their own orders or admin can view any
 app.get(
     '/api/users/:id/orders',
     authenticate,
@@ -175,8 +286,26 @@ app.get(
     async (req: Request, res: Response): Promise<void> => {
         try {
             const orders = await Order.findAll({
-                order: [['created_at', 'DESC']],
                 where: { user_id: req.params.id },
+                include: [
+                    {
+                        model: OrderItem,
+                        as: 'items',
+                        include: [
+                            {
+                                model: Product,
+                                as: 'product',
+                                attributes: ['id', 'title', 'image_url', 'platform'],
+                            },
+                        ],
+                    },
+                    {
+                        model: StockKey,
+                        as: 'stock_keys',
+                        attributes: ['id', 'game_key', 'product_id', 'status', 'assigned_at'],
+                    },
+                ],
+                order: [['created_at', 'DESC']],
             })
             res.json(orders)
         } catch (error) {
@@ -196,7 +325,24 @@ app.get(
             const products = await Product.findAll({
                 order: [['created_at', 'DESC']],
             })
-            res.json(products)
+
+            // Add available stock count from stock_keys table
+            const productsWithStock = await Promise.all(
+                products.map(async (product) => {
+                    const availableStock = await StockKey.count({
+                        where: {
+                            product_id: product.id,
+                            status: 'available',
+                        },
+                    })
+                    return {
+                        ...product.toJSON(),
+                        stock: availableStock,
+                    }
+                })
+            )
+
+            res.json(productsWithStock)
         } catch (error) {
             console.error('Error fetching products:', error)
             res.status(500).json({ error: 'Failed to fetch products' })
@@ -217,7 +363,6 @@ app.post(
                 category_id,
                 platform,
                 image_url,
-                stock,
             } = req.body
             const product = await Product.create({
                 title,
@@ -226,10 +371,17 @@ app.post(
                 category_id,
                 platform,
                 image_url,
-                stock,
+                stock: 0, // Stock is now managed via stock_keys table
                 is_active: true,
             })
-            res.json(product)
+
+            // Return product with available stock count
+            const availableStock = 0 // New products have no keys yet
+
+            res.json({
+                ...product.toJSON(),
+                stock: availableStock,
+            })
         } catch (error) {
             console.error('Error creating product:', error)
             res.status(500).json({ error: 'Failed to create product' })
@@ -255,7 +407,6 @@ app.put(
                 category_id,
                 platform,
                 image_url,
-                stock,
                 is_active,
             } = req.body
             await product.update({
@@ -265,10 +416,22 @@ app.put(
                 category_id,
                 platform,
                 image_url,
-                stock,
+                // stock field is no longer updated - it's managed via stock_keys table
                 is_active,
             })
-            res.json(product)
+
+            // Return product with available stock count
+            const availableStock = await StockKey.count({
+                where: {
+                    product_id: product.id,
+                    status: 'available',
+                },
+            })
+
+            res.json({
+                ...product.toJSON(),
+                stock: availableStock,
+            })
         } catch (error) {
             console.error('Error updating product:', error)
             res.status(500).json({ error: 'Failed to update product' })
@@ -411,6 +574,22 @@ app.get(
                         as: 'user',
                         attributes: ['id', 'first_name', 'last_name', 'email'],
                     },
+                    {
+                        model: OrderItem,
+                        as: 'items',
+                        include: [
+                            {
+                                model: Product,
+                                as: 'product',
+                                attributes: ['id', 'title', 'image_url', 'platform'],
+                            },
+                        ],
+                    },
+                    {
+                        model: StockKey,
+                        as: 'stock_keys',
+                        attributes: ['id', 'game_key', 'product_id', 'status', 'assigned_at'],
+                    },
                 ],
                 order: [['created_at', 'DESC']],
             })
@@ -441,6 +620,22 @@ app.get(
                             'email',
                             'phone',
                         ],
+                    },
+                    {
+                        model: OrderItem,
+                        as: 'items',
+                        include: [
+                            {
+                                model: Product,
+                                as: 'product',
+                                attributes: ['id', 'title', 'description', 'image_url', 'platform'],
+                            },
+                        ],
+                    },
+                    {
+                        model: StockKey,
+                        as: 'stock_keys',
+                        attributes: ['id', 'game_key', 'product_id', 'status', 'assigned_at'],
                     },
                 ],
             })

@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { User } from '../models'
 import { verifyTurnstileToken } from '../utils/turnstile'
+import { authenticate } from '../middleware/auth'
 
 const router = express.Router()
 const JWT_SECRET =
@@ -223,5 +224,80 @@ router.get('/verify', async (req: Request, res: Response): Promise<void> => {
         res.status(401).json({ error: 'Invalid token' })
     }
 })
+
+// Update password - requires authentication
+router.put(
+    '/update-password',
+    authenticate,
+    async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { currentPassword, newPassword } = req.body
+            const userId = req.user!.id
+
+            // Validate input
+            if (!currentPassword || !newPassword) {
+                res.status(400).json({
+                    error: 'Current password and new password are required',
+                })
+                return
+            }
+
+            // Password strength validation
+            if (newPassword.length < 8) {
+                res.status(400).json({
+                    error: 'New password must be at least 8 characters long',
+                })
+                return
+            }
+
+            // Get user with password
+            const user = await User.findByPk(userId)
+
+            if (!user || !user.is_active) {
+                res.status(404).json({ error: 'User not found' })
+                return
+            }
+
+            // Verify current password
+            const isCurrentPasswordValid = await bcrypt.compare(
+                currentPassword,
+                user.password_hash
+            )
+
+            if (!isCurrentPasswordValid) {
+                res.status(401).json({ error: 'Current password is incorrect' })
+                return
+            }
+
+            // Check if new password is same as current
+            const isSamePassword = await bcrypt.compare(
+                newPassword,
+                user.password_hash
+            )
+
+            if (isSamePassword) {
+                res.status(400).json({
+                    error: 'New password must be different from current password',
+                })
+                return
+            }
+
+            // Hash new password
+            const newPasswordHash = await bcrypt.hash(newPassword, SALT_ROUNDS)
+
+            // Update password
+            await user.update({
+                password_hash: newPasswordHash,
+            })
+
+            res.status(200).json({
+                message: 'Password updated successfully',
+            })
+        } catch (error) {
+            console.error('Error updating password:', error)
+            res.status(500).json({ error: 'Failed to update password' })
+        }
+    }
+)
 
 export default router
